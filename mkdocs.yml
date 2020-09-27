@@ -1,0 +1,13 @@
+site_name: SICP Exercises
+site_description: Answers to SICP Exercises
+theme: 
+  name: lumen
+  navigation_depth: 3
+repo_url: https://github.com/janreggie/sicp
+nav:
+  - 'index.markdown'
+  - '1': '1-building-abstractions-using-procedures'
+markdown_extensions:
+  - toc:
+      permalink: True
+      baselevel: 1
