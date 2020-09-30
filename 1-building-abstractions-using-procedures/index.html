@@ -17,6 +17,7 @@
         <script src="../js/jquery-1.10.2.min.js" defer></script>
         <script src="../js/bootstrap.min.js" defer></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/scheme.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
@@ -111,6 +112,18 @@
               </ul>
             </li>
             <li class="nav-item" data-level="3"><a href="#exercise-18" class="nav-link">Exercise 1.8</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#12-procedures-and-the-processes-they-generate" class="nav-link">1.2 Procedures and the Processes they Generate</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="3"><a href="#exercise-19" class="nav-link">Exercise 1.9</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-110" class="nav-link">Exercise 1.10</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -233,7 +246,128 @@ The first one is that the evaluation of the square root of the very small number
       (/ guess 100000)))
 (cbrt-iter 1.0 x))
 (cbrt 27)  ; ==&gt; 3.0000005410641766
-</code></pre></div>
+</code></pre>
+
+<h2 id="12-procedures-and-the-processes-they-generate">1.2 Procedures and the Processes they Generate<a class="headerlink" href="#12-procedures-and-the-processes-they-generate" title="Permanent link">&para;</a></h2>
+<h3 id="exercise-19">Exercise 1.9<a class="headerlink" href="#exercise-19" title="Permanent link">&para;</a></h3>
+<p>Supposing <code>inc</code> and <code>dec</code> are increment and decrement operators respectively, there is a difference how these two functions work:</p>
+<pre><code class="scheme">; First process
+(define (+ a b)
+  (if (= a 0) b (inc (+ (dec a) b))))
+(+ 4 5)
+; (inc (+ (dec 4) 5))
+; (inc (+ 3 5))
+; (inc (inc (+ (dec 3) 5)))
+; (inc (inc (+ 2 5)))
+; (inc (inc (inc (+ (dec 2) 5))))
+; (inc (inc (inc (+ 1 5))))
+; (inc (inc (inc (inc (+ (dec 1) 5)))))
+; (inc (inc (inc (inc (+ 0 5)))))
+; (inc (inc (inc (inc 5))))
+; (inc (inc (inc 6)))
+; (inc (inc 7))
+; (inc 8)
+; (9)
+</code></pre>
+
+<pre><code class="scheme">; Second process
+(define (+ a b)
+  (if (= a 0) b (+ (dec a) (inc b))))
+(+ 4 5)
+; (+ (dec 4) (inc 5))
+; (+ 3 6)
+; (+ (dec 3) (inc 6))
+; (+ 2 7)
+; (+ (dec 2) (inc 7))
+; (+ 1 8)
+; (+ (dec 1) (inc 8))
+; (+ 0 9)
+; (9)
+</code></pre>
+
+<p>The first process can be characterized as recursive since a chain of operations can be seen growing after every call, while the second can be characterized as iterative as the chain of operations does not grow or shrink, and the state is maintained by the parameters it contains.</p>
+<h3 id="exercise-110">Exercise 1.10<a class="headerlink" href="#exercise-110" title="Permanent link">&para;</a></h3>
+<p>Consider Ackermann's function:</p>
+<pre><code class="scheme">(define (A x y)
+  (cond ((= y 0) 0)
+    ((= x 0) (* 2 y))
+    ((= y 1) 2)
+    (else (A (- x 1) (A x (- y 1))))))
+</code></pre>
+
+<p>From here, we see that <code>f</code> such that <code>(define (f n) (A 0 n))</code> would just be <span class="arithmatex">\(f\left(n\right)=2n\)</span>.</p>
+<pre><code class="scheme">(A 1 10)
+; (A (- 1 1) (A 1 (- 10 1)))
+; (A 0 (A 1 9))
+; (A 0 (A (- 1 1) (A 1 (- 9 1))))
+; (A 0 (A 0 (A 1 8)))
+; (A 0 (A 0 (A (- 1 1) (A 1 (- 8 1)))))
+; (A 0 (A 0 (A 0 (A 1 7))))
+; (A 0 (A 0 (A 0 (A (- 1 1) (A 1 (- 7 1))))))
+; (A 0 (A 0 (A 0 (A 0 (A 1 6)))))
+; (A 0 (A 0 (A 0 (A 0 (A (- 1 1) (A 1 (- 6 1)))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 1 5))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A (- 1 1) (A 1 (- 5 1))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 1 4)))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A (- 1 1) (A 1 (- 4 1)))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 1 3))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A (- 1 1) (A 1 (- 3 1))))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 1 2)))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A (- 1 1) (A 1 (- 2 1)))))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 1 1))))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 2)))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (* 2 2)))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 4))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (* 2 4))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 8)))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (* 2 8)))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 16))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (* 2 16))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 32)))))
+; (A 0 (A 0 (A 0 (A 0 (* 2 32)))))
+; (A 0 (A 0 (A 0 (A 0 64))))
+; (A 0 (A 0 (A 0 (* 2 64))))
+; (A 0 (A 0 (A 0 128)))
+; (A 0 (A 0 (* 2 128)))
+; (A 0 (A 0 256))
+; (A 0 (* 2 256))
+; (A 0 512)
+; (* 2 0 512)
+; (1024)
+</code></pre>
+
+<p>Hypothesize that <code>g</code> such that <code>(define (g n) (A 1 n))</code> equals <span class="arithmatex">\(g\left(n\right)=2^n\)</span>. This can be proved using induction: suppose <span class="arithmatex">\(A\left(1,n\right)=2^n\)</span>, and prove that <span class="arithmatex">\(A\left(1,n+1\right)=2^{n+1}\)</span>.</p>
+<div class="arithmatex">\[
+\begin{aligned}
+A\left(1,n+1\right) &amp;= A\left(1-1, A\left(1, \left(n+1\right)-1\right)\right) \\
+                    &amp;= A\left(0, A\left(1, n\right)\right) \\
+                    &amp;= 2\cdot A\left(1,n\right) \\
+                    &amp;= 2\cdot2^n \\
+                    &amp;= 2^{n+1}
+\end{aligned}
+\]</div>
+<pre><code class="scheme">(A 2 4)
+; (A (- 2 1) (A 2 (- 4 1)))
+; (A 1 (A 2 3))
+; (A 1 (A (- 2 1) (A 2 (- 3 1))))
+; (A 1 (A 1 (A 2 2)))
+; (A 1 (A 1 (A (- 2 1) (A 2 (- 2 1)))))
+; (A 1 (A 1 (A 1 (A 2 1))))
+; (A 1 (A 1 (A 1 2)))
+</code></pre>
+
+<p>From our previous definition of <code>g</code>, we can say that the expression <code>(A 1 (A 1 (A 1 2)))</code> solves to <span class="arithmatex">\(2^{2^{2^2}}\)</span>, although writing down the steps to getting there will be <del>hell</del> an exercise left to the reader.</p>
+<p>Hypothesize that <code>h</code> such that <code>(define (h n) (A 2 n))</code> equals <span class="arithmatex">\(h\left(n\right)=2^{2^{\cdot^{\cdot^{\cdot^2}}}}\)</span>, such that the number of <span class="arithmatex">\(2\)</span> equals <span class="arithmatex">\(n\)</span>. This also can be proved using induction: suppose <span class="arithmatex">\(A\left(2,n\right)=2^{2^{\cdot^{\cdot^{\cdot^2}}}} \rbrace\text{n-many 2's}\)</span>, and prove that <span class="arithmatex">\(A\left(2,n+1\right)\)</span> results to <span class="arithmatex">\(n+1\)</span> twos:</p>
+<div class="arithmatex">\[
+\begin{aligned}
+A\left(2,n+1\right) &amp;= A\left(2-1, A\left(2, \left(n+1\right)-1\right)\right) \\
+                    &amp;= A\left(1,A\left(2,n\right)\right) \\
+                    % why do i even bother...
+                    &amp;= A\left(1, \left.2^{2^{\cdot^{\cdot^{\cdot^2}}}}\right\rbrace\text{$n$-many 2's}\right) \\
+                    &amp;= 2^{\left.2^{2^{\cdot^{\cdot^{\cdot^2}}}}\right\rbrace\text{$n$-many 2's}} \\
+                    &amp;= \left.2^{2^{\cdot^{\cdot^{\cdot^2}}}}\right\rbrace\text{$n+1$-many 2's}
+\end{aligned}
+\]</div></div>
             </div>
         </div>
 
@@ -246,6 +380,9 @@ The first one is that the evaluation of the square root of the very small number
                 shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
         </script>
         <script src="../js/base.js" defer></script>
+        <script src="../js/mathjax.js" defer></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
         <script src="../search/main.js" defer></script>
 
         <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
