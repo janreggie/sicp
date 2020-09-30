@@ -1,5 +1,6 @@
 # venv for python's mkdocs and other themes
 env
+site/
 
 # scratchpad for playing around with Scheme
 scratchpad/
