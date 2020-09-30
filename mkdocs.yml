@@ -4,11 +4,20 @@ site_description: Answers to SICP Exercises
 theme: 
   name: lumen
   navigation_depth: 3
+  hljs_languages:
+    - scheme
 repo_url: https://github.com/janreggie/sicp
 nav:
   - 'index.markdown'
   - '1': '1-building-abstractions-using-procedures.markdown'
+extra_javascript:
+  - js/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 markdown_extensions:
   - toc:
       permalink: True
       baselevel: 1
+  - pymdownx.arithmatex:
+      generic: true
+  - markdown_del_ins:

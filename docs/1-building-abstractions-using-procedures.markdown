@@ -135,3 +135,140 @@ While the value for error might seem much larger for large numbers, running `(sq
 (cbrt-iter 1.0 x))
 (cbrt 27)  ; ==> 3.0000005410641766
 ```
+
+## 1.2 Procedures and the Processes they Generate
+
+### Exercise 1.9
+
+Supposing `inc` and `dec` are increment and decrement operators respectively, there is a difference how these two functions work:
+
+```scheme
+; First process
+(define (+ a b)
+  (if (= a 0) b (inc (+ (dec a) b))))
+(+ 4 5)
+; (inc (+ (dec 4) 5))
+; (inc (+ 3 5))
+; (inc (inc (+ (dec 3) 5)))
+; (inc (inc (+ 2 5)))
+; (inc (inc (inc (+ (dec 2) 5))))
+; (inc (inc (inc (+ 1 5))))
+; (inc (inc (inc (inc (+ (dec 1) 5)))))
+; (inc (inc (inc (inc (+ 0 5)))))
+; (inc (inc (inc (inc 5))))
+; (inc (inc (inc 6)))
+; (inc (inc 7))
+; (inc 8)
+; (9)
+```
+
+```scheme
+; Second process
+(define (+ a b)
+  (if (= a 0) b (+ (dec a) (inc b))))
+(+ 4 5)
+; (+ (dec 4) (inc 5))
+; (+ 3 6)
+; (+ (dec 3) (inc 6))
+; (+ 2 7)
+; (+ (dec 2) (inc 7))
+; (+ 1 8)
+; (+ (dec 1) (inc 8))
+; (+ 0 9)
+; (9)
+```
+
+The first process can be characterized as recursive since a chain of operations can be seen growing after every call, while the second can be characterized as iterative as the chain of operations does not grow or shrink, and the state is maintained by the parameters it contains.
+
+### Exercise 1.10
+
+Consider Ackermann's function:
+
+```scheme
+(define (A x y)
+  (cond ((= y 0) 0)
+    ((= x 0) (* 2 y))
+    ((= y 1) 2)
+    (else (A (- x 1) (A x (- y 1))))))
+```
+
+From here, we see that `f` such that `(define (f n) (A 0 n))` would just be $f\left(n\right)=2n$.
+
+```scheme
+(A 1 10)
+; (A (- 1 1) (A 1 (- 10 1)))
+; (A 0 (A 1 9))
+; (A 0 (A (- 1 1) (A 1 (- 9 1))))
+; (A 0 (A 0 (A 1 8)))
+; (A 0 (A 0 (A (- 1 1) (A 1 (- 8 1)))))
+; (A 0 (A 0 (A 0 (A 1 7))))
+; (A 0 (A 0 (A 0 (A (- 1 1) (A 1 (- 7 1))))))
+; (A 0 (A 0 (A 0 (A 0 (A 1 6)))))
+; (A 0 (A 0 (A 0 (A 0 (A (- 1 1) (A 1 (- 6 1)))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 1 5))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A (- 1 1) (A 1 (- 5 1))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 1 4)))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A (- 1 1) (A 1 (- 4 1)))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 1 3))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A (- 1 1) (A 1 (- 3 1))))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 1 2)))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A (- 1 1) (A 1 (- 2 1)))))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 1 1))))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 2)))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (* 2 2)))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 4))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (* 2 4))))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 8)))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 (* 2 8)))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (A 0 16))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 (* 2 16))))))
+; (A 0 (A 0 (A 0 (A 0 (A 0 32)))))
+; (A 0 (A 0 (A 0 (A 0 (* 2 32)))))
+; (A 0 (A 0 (A 0 (A 0 64))))
+; (A 0 (A 0 (A 0 (* 2 64))))
+; (A 0 (A 0 (A 0 128)))
+; (A 0 (A 0 (* 2 128)))
+; (A 0 (A 0 256))
+; (A 0 (* 2 256))
+; (A 0 512)
+; (* 2 0 512)
+; (1024)
+```
+
+Hypothesize that `g` such that `(define (g n) (A 1 n))` equals $g\left(n\right)=2^n$. This can be proved using induction: suppose $A\left(1,n\right)=2^n$, and prove that $A\left(1,n+1\right)=2^{n+1}$.
+
+$$
+\begin{aligned}
+A\left(1,n+1\right) &= A\left(1-1, A\left(1, \left(n+1\right)-1\right)\right) \\
+                    &= A\left(0, A\left(1, n\right)\right) \\
+                    &= 2\cdot A\left(1,n\right) \\
+                    &= 2\cdot2^n \\
+                    &= 2^{n+1}
+\end{aligned}
+$$
+
+```scheme
+(A 2 4)
+; (A (- 2 1) (A 2 (- 4 1)))
+; (A 1 (A 2 3))
+; (A 1 (A (- 2 1) (A 2 (- 3 1))))
+; (A 1 (A 1 (A 2 2)))
+; (A 1 (A 1 (A (- 2 1) (A 2 (- 2 1)))))
+; (A 1 (A 1 (A 1 (A 2 1))))
+; (A 1 (A 1 (A 1 2)))
+```
+
+From our previous definition of `g`, we can say that the expression `(A 1 (A 1 (A 1 2)))` solves to $2^{2^{2^2}}$, although writing down the steps to getting there will be ~~hell~~ an exercise left to the reader.
+
+Hypothesize that `h` such that `(define (h n) (A 2 n))` equals $h\left(n\right)=2^{2^{\cdot^{\cdot^{\cdot^2}}}}$, such that the number of $2$ equals $n$. This also can be proved using induction: suppose $A\left(2,n\right)=2^{2^{\cdot^{\cdot^{\cdot^2}}}} \rbrace\text{n-many 2's}$, and prove that $A\left(2,n+1\right)$ results to $n+1$ twos:
+
+$$
+\begin{aligned}
+A\left(2,n+1\right) &= A\left(2-1, A\left(2, \left(n+1\right)-1\right)\right) \\
+                    &= A\left(1,A\left(2,n\right)\right) \\
+                    % why do i even bother...
+                    &= A\left(1, \left.2^{2^{\cdot^{\cdot^{\cdot^2}}}}\right\rbrace\text{$n$-many 2's}\right) \\
+                    &= 2^{\left.2^{2^{\cdot^{\cdot^{\cdot^2}}}}\right\rbrace\text{$n$-many 2's}} \\
+                    &= \left.2^{2^{\cdot^{\cdot^{\cdot^2}}}}\right\rbrace\text{$n+1$-many 2's}
+\end{aligned}
+$$
