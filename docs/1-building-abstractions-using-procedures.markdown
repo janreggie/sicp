@@ -272,3 +272,85 @@ A\left(2,n+1\right) &= A\left(2-1, A\left(2, \left(n+1\right)-1\right)\right) \\
                     &= \left.2^{2^{\cdot^{\cdot^{\cdot^2}}}}\right\rbrace\text{$n+1$-many 2's}
 \end{aligned}
 $$
+
+### Exercise 1.11
+
+Writing the recursive implementation is trivial:
+
+```scheme
+(define (f n)
+  (if (< n 3)
+    n
+    (+ (f (- n 1))
+      (* 2 (f (- n 2)))
+      (* 3 (f (- n 3))))))
+(f 30)  ; ==> 61354575194 (will take a long time to compute)
+```
+
+Writing an iterative implementation is a bit more difficult.
+Consider that, ultimately, `f` is evaluated as a sum of three numbers,
+and these three numbers can be used as a state.
+
+```scheme
+(define (f n)
+  ; iter is the iterative process wherein (a, b, c) <- (a+2b+3c, a, b).
+  ; if count == 0, return a
+  (define (iter a b c count)
+    (if (= count 0)
+      a
+      (iter (+ a (* 2 b) (* 3 c)) a b (- count 1))))
+
+  (if (< n 3)
+    n
+    (iter 2 1 0 (- n 2)))  ; 2 as an offset
+)
+(f 30)  ; ==> 61354575194 (didn't take that long at all!)
+```
+
+### Exercise 1.12
+
+```scheme
+; pascal returns the cnt'th number (start from zero)
+; at the row'th row (0: 1, 1: 1,1, 2: 1,2,1).
+(define (pascal row cnt)
+  (cond ((or (< cnt 0) (> cnt row)) 0)
+    ((or (= cnt 0) (= cnt row)) 1)
+    (else (+
+      (pascal (- row 1) (- cnt 1))
+      (pascal (- row 1) cnt))
+    )
+  )
+)
+(pascal 4 2)
+```
+
+### Exercise 1.13
+
+Initially, let us prove that $F\left(n\right) = \frac{\phi^n - \psi^n}{\sqrt{5}}$, where $F\left(n\right)$ is the $n$'th Fibonacci number and $\phi=\frac{1+\sqrt{5}}{2}, \psi=\frac{1-\sqrt{5}}{2}$, via induction.
+
+The base cases for $F\left(0\right)$ and $F\left(1\right)$ is shown to be 0 and 1. A proof is left as an exercise to the reader.
+
+Suppose that $F$ follows up to $n-1$. Let us then prove that $F\left(n\right)$ holds.
+
+$$
+\begin{aligned}
+F\left(n\right) &= F\left(n-1\right) + F\left(n-2\right)  \\
+                &= \frac{\phi^\left(n-1\right) - \psi^\left(n-1\right)}{\sqrt{5}}
+                    + \frac{\phi^\left(n-2\right) - \psi^\left(n-2\right)}{\sqrt{5}} \\
+                &= \frac{\left(\phi+1\right) \phi^\left(n-2\right) - \left(\psi+1\right) \psi^\left(n-2\right)}{\sqrt{5}} \\
+                &= \frac{\frac{3+\sqrt{5}}{2} \phi^\left(n-2\right) - \frac{3-\sqrt{5}}{2} \psi^\left(n-2\right)}{\sqrt{5}}
+                  && \text{Note that $\frac{3\pm\sqrt{5}}{2}=\left(\frac{1\pm\sqrt{5}}{2}\right)^2$} \\
+                &= \frac{\phi^2 \phi^\left(n-2\right) - \psi^2 \psi^\left(n-2\right)}{\sqrt{5}} \\
+                &= \frac{\phi^n - \psi^n}{\sqrt{5}}
+\end{aligned}
+$$
+
+Note that $\psi\approx-0.618$ and $\psi^n$ approaches zero. Therefore, $\frac{\phi^n}{\sqrt{5}}$ is "close enough" to $\frac{\phi^n - \psi^n}{\sqrt{5}}$.
+
+<!-- ### Exercise 1.14
+
+![Image of the tree](/img/1-14.svg)
+
+Paths leading to a red node are unwanted, whereas paths leading to a green node are desired. Note that multiple sections of the tree repeat itself, which is why a node can have more than two paths coming towards it.
+
+An increment to `amount` increases the number of operations exponentially, which can  -->
