@@ -127,6 +127,38 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-111" class="nav-link">Exercise 1.11</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-112" class="nav-link">Exercise 1.12</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-113" class="nav-link">Exercise 1.13</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-114" class="nav-link">Exercise 1.14</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-115" class="nav-link">Exercise 1.15</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-116" class="nav-link">Exercise 1.16</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-117" class="nav-link">Exercise 1.17</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-118" class="nav-link">Exercise 1.18</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
               </ul>
@@ -367,7 +399,138 @@ A\left(2,n+1\right) &amp;= A\left(2-1, A\left(2, \left(n+1\right)-1\right)\right
                     &amp;= 2^{\left.2^{2^{\cdot^{\cdot^{\cdot^2}}}}\right\rbrace\text{$n$-many 2's}} \\
                     &amp;= \left.2^{2^{\cdot^{\cdot^{\cdot^2}}}}\right\rbrace\text{$n+1$-many 2's}
 \end{aligned}
-\]</div></div>
+\]</div>
+<h3 id="exercise-111">Exercise 1.11<a class="headerlink" href="#exercise-111" title="Permanent link">&para;</a></h3>
+<p>Writing the recursive implementation is trivial:</p>
+<pre><code class="scheme">(define (f n)
+  (if (&lt; n 3)
+    n
+    (+ (f (- n 1))
+      (* 2 (f (- n 2)))
+      (* 3 (f (- n 3))))))
+(f 30)  ; ==&gt; 61354575194 (will take a long time to compute)
+</code></pre>
+
+<p>Writing an iterative implementation is a bit more difficult.
+Consider that, ultimately, <code>f</code> is evaluated as a sum of three numbers,
+and these three numbers can be used as a state.</p>
+<pre><code class="scheme">(define (f n)
+  ; iter is the iterative process wherein (a, b, c) &lt;- (a+2b+3c, a, b).
+  ; if count == 0, return a
+  (define (iter a b c count)
+    (if (= count 0)
+      a
+      (iter (+ a (* 2 b) (* 3 c)) a b (- count 1))))
+
+  (if (&lt; n 3)
+    n
+    (iter 2 1 0 (- n 2)))  ; 2 as an offset
+)
+(f 30)  ; ==&gt; 61354575194 (didn't take that long at all!)
+</code></pre>
+
+<h3 id="exercise-112">Exercise 1.12<a class="headerlink" href="#exercise-112" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; pascal returns the cnt'th number (start from zero)
+; at the row'th row (0: 1, 1: 1,1, 2: 1,2,1).
+(define (pascal row cnt)
+  (cond ((or (&lt; cnt 0) (&gt; cnt row)) 0)
+    ((or (= cnt 0) (= cnt row)) 1)
+    (else (+
+      (pascal (- row 1) (- cnt 1))
+      (pascal (- row 1) cnt))
+    )
+  )
+)
+(pascal 4 2)
+</code></pre>
+
+<h3 id="exercise-113">Exercise 1.13<a class="headerlink" href="#exercise-113" title="Permanent link">&para;</a></h3>
+<p>Initially, let us prove that <span class="arithmatex">\(F\left(n\right) = \frac{\phi^n - \psi^n}{\sqrt{5}}\)</span>, where <span class="arithmatex">\(F\left(n\right)\)</span> is the <span class="arithmatex">\(n\)</span>'th Fibonacci number and <span class="arithmatex">\(\phi=\frac{1+\sqrt{5}}{2}, \psi=\frac{1-\sqrt{5}}{2}\)</span>, via induction.</p>
+<p>The base cases for <span class="arithmatex">\(F\left(0\right)\)</span> and <span class="arithmatex">\(F\left(1\right)\)</span> is shown to be 0 and 1. A proof is left as an exercise to the reader.</p>
+<p>Suppose that <span class="arithmatex">\(F\)</span> follows up to <span class="arithmatex">\(n-1\)</span>. Let us then prove that <span class="arithmatex">\(F\left(n\right)\)</span> holds.</p>
+<div class="arithmatex">\[
+\begin{aligned}
+F\left(n\right) &amp;= F\left(n-1\right) + F\left(n-2\right)  \\
+                &amp;= \frac{\phi^\left(n-1\right) - \psi^\left(n-1\right)}{\sqrt{5}}
+                    + \frac{\phi^\left(n-2\right) - \psi^\left(n-2\right)}{\sqrt{5}} \\
+                &amp;= \frac{\left(\phi+1\right) \phi^\left(n-2\right) - \left(\psi+1\right) \psi^\left(n-2\right)}{\sqrt{5}} \\
+                &amp;= \frac{\frac{3+\sqrt{5}}{2} \phi^\left(n-2\right) - \frac{3-\sqrt{5}}{2} \psi^\left(n-2\right)}{\sqrt{5}}
+                  &amp;&amp; \text{Note that $\frac{3\pm\sqrt{5}}{2}=\left(\frac{1\pm\sqrt{5}}{2}\right)^2$} \\
+                &amp;= \frac{\phi^2 \phi^\left(n-2\right) - \psi^2 \psi^\left(n-2\right)}{\sqrt{5}} \\
+                &amp;= \frac{\phi^n - \psi^n}{\sqrt{5}}
+\end{aligned}
+\]</div>
+<p>Note that <span class="arithmatex">\(\psi\approx-0.618\)</span> and <span class="arithmatex">\(\psi^n\)</span> approaches zero. Therefore, <span class="arithmatex">\(\frac{\phi^n}{\sqrt{5}}\)</span> is "close enough" to <span class="arithmatex">\(\frac{\phi^n - \psi^n}{\sqrt{5}}\)</span>.</p>
+<h3 id="exercise-114">Exercise 1.14<a class="headerlink" href="#exercise-114" title="Permanent link">&para;</a></h3>
+<p><img alt="Image of the tree" src="/img/1-14.svg" /></p>
+<p>Paths leading to a red node are unwanted, whereas paths leading to a green node are desired. Note that multiple sections of the tree repeat itself, which is why a node can have more than two paths coming towards it.</p>
+<p>An increment to <code>amount</code> increases the number of operations exponentially, and increases the number of nodes to compute linearly.</p>
+<h3 id="exercise-115">Exercise 1.15<a class="headerlink" href="#exercise-115" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (cube x) (* x x x))
+(define (p x) (- (* 3 x) (* 4 (cube x))))
+(define (sine angle)
+  (if (not (&gt; (abs angle) 0.1))
+    angle
+    (p (sine (/ angle 3.0)))))
+(sine 12.15)
+; (/ angle 3.0) and (p x) operations have been substituted
+; (p (sine 4.05))
+; (p (p (sine 1.35)))
+; (p (p (p (sine 0.45))))
+; (p (p (p (p (sine 0.15)))))
+; (p (p (p (p (p (sine 0.05))))))
+; (p (p (p (p (p 0.05)))))
+; (p (p (p (p 0.1495))))
+; (p (p (p 0.4351)))
+; (p (p 0.9758))
+; (p -0.7892)
+; -0.4044
+</code></pre>
+
+<p>The <code>p</code> procedure has been applied five times. Considering that <code>p</code> can be solved in constant time and occupies constant space, the order of growth in space and the number of steps for <span class="arithmatex">\(p\left(a\right)\)</span> is <span class="arithmatex">\(\Theta\left(\lg n\right)\)</span>.</p>
+<p>This can be shown by noticing that <span class="arithmatex">\(p\left(3a\right)\)</span> requires a constant number of operations more than <span class="arithmatex">\(p\left(a\right)\)</span>, for instance, the amount of space and operations for <code>(sine 1.35)</code> versus that of <code>(sine 4.05)</code>.</p>
+<h3 id="exercise-116">Exercise 1.16<a class="headerlink" href="#exercise-116" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; expt is an exponential function that returns b raised to n.
+; note that this shadows the built-in expt.
+(define (expt b n)
+  (define (even? n) (= (remainder n 2) 0))
+  (define (halve n) (/ n 2))
+  (define (square n) (* n n))
+  ; exptiter iterates thru a, b, and n until b equals 1, and then the result is located in a.
+  ; a must be initialized to 1.
+  (define (exptiter a b n)
+    (cond ((= n 0) a)
+      ((even? n) (exptiter a (square b) (halve n)))
+      (else (exptiter (* a b) b (- n 1)))))
+  (exptiter 1 b n))
+(expt 3 5) ; ==&gt; 243
+</code></pre>
+
+<h3 id="exercise-117">Exercise 1.17<a class="headerlink" href="#exercise-117" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (mul a b)
+  (define (even? n) (= (remainder n 2) 0))
+  (define (halve n) (/ n 2))
+  (define (double n) (+ n n))
+  (cond
+    ((= b 0) 0)
+    ((= b 1) a)
+    ((even? b) (mul (double a) (halve b)))
+    (else (+ a (mul a (- b 1))))))
+(mul 9 6) ; ==&gt; 54
+</code></pre>
+
+<h3 id="exercise-118">Exercise 1.18<a class="headerlink" href="#exercise-118" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (mul a b)
+  (define (even? n) (= (remainder n 2) 0))
+  (define (halve n) (/ n 2))
+  (define (double n) (+ n n))
+  (define (multiter a b result)
+    (cond ((= b 0) result)
+      ((even? b) (multiter (double a) (halve b) result))
+      (else (multiter a (- b 1) (+ result a)))))
+  (multiter a b 0))
+(mul 9 6) ; ==&gt; 54
+</code></pre></div>
             </div>
         </div>
 
