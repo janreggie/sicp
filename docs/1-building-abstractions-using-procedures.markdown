@@ -347,10 +347,87 @@ $$
 
 Note that $\psi\approx-0.618$ and $\psi^n$ approaches zero. Therefore, $\frac{\phi^n}{\sqrt{5}}$ is "close enough" to $\frac{\phi^n - \psi^n}{\sqrt{5}}$.
 
-<!-- ### Exercise 1.14
+### Exercise 1.14
 
 ![Image of the tree](/img/1-14.svg)
 
 Paths leading to a red node are unwanted, whereas paths leading to a green node are desired. Note that multiple sections of the tree repeat itself, which is why a node can have more than two paths coming towards it.
 
-An increment to `amount` increases the number of operations exponentially, which can  -->
+An increment to `amount` increases the number of operations exponentially, and increases the number of nodes to compute linearly.
+
+### Exercise 1.15
+
+```scheme
+(define (cube x) (* x x x))
+(define (p x) (- (* 3 x) (* 4 (cube x))))
+(define (sine angle)
+  (if (not (> (abs angle) 0.1))
+    angle
+    (p (sine (/ angle 3.0)))))
+(sine 12.15)
+; (/ angle 3.0) and (p x) operations have been substituted
+; (p (sine 4.05))
+; (p (p (sine 1.35)))
+; (p (p (p (sine 0.45))))
+; (p (p (p (p (sine 0.15)))))
+; (p (p (p (p (p (sine 0.05))))))
+; (p (p (p (p (p 0.05)))))
+; (p (p (p (p 0.1495))))
+; (p (p (p 0.4351)))
+; (p (p 0.9758))
+; (p -0.7892)
+; -0.4044
+```
+
+The `p` procedure has been applied five times. Considering that `p` can be solved in constant time and occupies constant space, the order of growth in space and the number of steps for $p\left(a\right)$ is $\Theta\left(\lg n\right)$.
+
+This can be shown by noticing that $p\left(3a\right)$ requires a constant number of operations more than $p\left(a\right)$, for instance, the amount of space and operations for `(sine 1.35)` versus that of `(sine 4.05)`.
+
+### Exercise 1.16
+
+```scheme
+; expt is an exponential function that returns b raised to n.
+; note that this shadows the built-in expt.
+(define (expt b n)
+  (define (even? n) (= (remainder n 2) 0))
+  (define (halve n) (/ n 2))
+  (define (square n) (* n n))
+  ; exptiter iterates thru a, b, and n until b equals 1, and then the result is located in a.
+  ; a must be initialized to 1.
+  (define (exptiter a b n)
+    (cond ((= n 0) a)
+      ((even? n) (exptiter a (square b) (halve n)))
+      (else (exptiter (* a b) b (- n 1)))))
+  (exptiter 1 b n))
+(expt 3 5) ; ==> 243
+```
+
+### Exercise 1.17
+
+```scheme
+(define (mul a b)
+  (define (even? n) (= (remainder n 2) 0))
+  (define (halve n) (/ n 2))
+  (define (double n) (+ n n))
+  (cond
+    ((= b 0) 0)
+    ((= b 1) a)
+    ((even? b) (mul (double a) (halve b)))
+    (else (+ a (mul a (- b 1))))))
+(mul 9 6) ; ==> 54
+```
+
+### Exercise 1.18
+
+```scheme
+(define (mul a b)
+  (define (even? n) (= (remainder n 2) 0))
+  (define (halve n) (/ n 2))
+  (define (double n) (+ n n))
+  (define (multiter a b result)
+    (cond ((= b 0) result)
+      ((even? b) (multiter (double a) (halve b) result))
+      (else (multiter a (- b 1) (+ result a)))))
+  (multiter a b 0))
+(mul 9 6) ; ==> 54
+```
