@@ -431,3 +431,132 @@ This can be shown by noticing that $p\left(3a\right)$ requires a constant number
   (multiter a b 0))
 (mul 9 6) ; ==> 54
 ```
+
+### Exercise 1.19
+
+Note that $a, b \xleftarrow{T\left(p,q\right)} bq+aq+ap, bp+aq = a\left(p+q\right)+bq, aq+bp$. With some algebra,
+
+$$
+\begin{aligned}
+a, b &\xleftarrow{T^2\left(p,q\right)} \left(ap^2+2apq+2bpq+2aq^2+bq^2\right), \left(bp^2+2apq+aq^2+bq^2\right) \\
+     &\xleftarrow{T^2\left(p,q\right)} a\left(p^2+2pq+2q^2\right)+b\left(2pq+q^2\right), a\left(2pq+q^2\right)+b\left(p^2+q^2\right) \\
+T^2\left(p,q\right) &= T\left(p^2+q^2, 2pq+q^2\right)
+\end{aligned}
+$$
+
+```scheme
+(define (fib n)
+  (define (even? n) (= (remainder n 2) 0))
+  (define (fib-iter a b p q count)
+    (cond
+      ((= count 0) b)
+      ((even? count)
+        (fib-iter
+          a
+          b
+          (+ (* p p) (* q q))
+          (+ (* 2 p q) (* q q))
+          (/ count 2)))
+      (else
+        (fib-iter
+          (+ (* b p) (* a q) (* a p))
+          (+ (* b p) (* a q))
+          p
+          q
+          (- count 1)))))
+  (fib-iter 1 0 0 1 n))
+(fib 35) ; ==> 9227465
+```
+
+### Exercise 1.20
+
+```scheme
+(define (gcd a b)
+  (if (= b 0)
+    a
+    (gcd b (remainder a b))))
+
+(gcd 206 40)
+; for normal-order evaluation (18 remainder operations)
+; (gcd 206 40)
+; (if (= 40 0) 206 (gcd 40 (remainder 206 40)))
+; (gcd 40 (remainder 206 40))
+; (if (= (remainder 206 40) 0) 40 (gcd (remainder 206 40) (remainder 40 (remainder 206 40))))
+; (if (= 6 0)  ; remainder +1
+;   40
+;   (gcd (remainder 206 40) (remainder 40 (remainder 206 40))))
+; (gcd (remainder 206 40) (remainder 40 (remainder 206 40)))
+; (if (= (remainder 40 (remainder 206 40)) 0)
+;   (remainder 206 40)
+;   (gcd
+;     (remainder 40 (remainder 206 40))
+;     (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))))
+; (if (= 4 0)  ; remainder +2
+;   (remainder 206 40)
+;   (gcd
+;     (remainder 40 (remainder 206 40))
+;     (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))))
+; (gcd
+;   (remainder 40 (remainder 206 40))
+;   (remainder (remainder 206 40) (remainder 40 (remainder 206 40))))
+; (if (= (remainder (remainder 206 40) (remainder 40 (remainder 206 40))) 0)
+;   (remainder 40 (remainder 206 40))
+;   (gcd
+;     (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))
+;     (remainder (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40))))))
+; (if (= 2 0)  ; remainder +4
+;   (remainder 40 (remainder 206 40))
+;   (gcd
+;     (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))
+;     (remainder (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40))))))
+; (gcd
+;   (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))
+;   (remainder (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))))
+; (if (= (remainder (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))) 0)
+;   (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))
+;   (gcd
+;     (remainder (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40))))
+;     (remainder (remainder (remainder 206 40) (remainder 40 (remainder 206 40))) (remainder (remainder 40 (remainder 206 40)) ; (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))))))
+; (if (= 0 0)  ; remainder +7
+;   (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))
+;   (gcd
+;     (remainder (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40))))
+;     (remainder (remainder (remainder 206 40) (remainder 40 (remainder 206 40))) (remainder (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))))))
+; (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))
+; ==> 2  ; remainder +4
+
+; for applicative-order evaluation (4 remainder operations)
+; (gcd 206 40)
+; (if (= 40 0) 206 (gcd 40 (remainder 206 40)))
+; (gcd 40 6)  ; remainder +1
+; (if (= 6 0) 40 (gcd 6 (remainder 40 6)))
+; (gcd 6 4)  ; remainder +1
+; (if (= 4 0) 6 (gcd 4 (remainder 6 4)))
+; (gcd 4 2)  ; remainder +1
+; (if (= 2 0) 4 (gcd 2 (remainder 4 2)))
+; (gcd 2 0)  ; remainder +1
+; (if (= 0 0) 2 (gcd 2 (remainder 0 0)))
+; ==> 2
+```
+
+### Exercise 1.21
+
+```scheme
+(define (smallest-divisor n)
+  (define (divides? a b) (= (remainder b a) 0))
+  (define (square n) (* n n))
+  (define (find-divisor n test-divisor)
+    (cond ((> (square test-divisor) n) n)
+      ((divides? test-divisor n) test-divisor)
+      (else (find-divisor n (+ test-divisor 1)))))
+
+  (find-divisor n 2))
+(smallest-divisor 199)
+; (find-divisor 199 2)
+; (find-divisor 199 3)
+; ...
+; (find-divisor 199 15)
+; ==> 199
+```
+
+A similar event happens for 1999 where `find-diivisor` exhausts `test-divisor` from 2 to 45, and since the square of 45 is larger than 1999, it gives up and returns 1999. For 19999, when `test-divisor` becomes 7, `(divides? 7 19999)` returns `#t` and the iterative process stops and returns 7.
