@@ -843,3 +843,191 @@ Computing for prime numbers feels nearly instantaneous. Much, much larger number
 ```
 
 After each iteration the base is squared, leading to a near tripling of checking time: $T\left(n^2\right) \approx 3T\left(n\right)$. This satisfies $\Theta\left(T\left(n\right)\right)=\Theta\left(\log n\right)$.
+
+### Exercise 1.25
+
+The original procedure is as follows:
+
+```scheme
+(define (expmod base exp m)
+  (define (square x) (* x x))
+  (cond ((= exp 0) 1)
+    ((even? exp) (remainder (square (expmod base (/ exp 2) m)) m))
+    (else (remainder (* base (expmod base (- exp 1) m)) m))))
+```
+
+and the modified is as follows:
+
+```scheme
+(define (expmod base exp m)
+  (remainder (fast-expt base exp) m))
+```
+
+The issue here is that `(fast-expt ...)` has to be evaluated first, and `base` and `exp` can be ridiculously high. After all of that, its remainder when divided by `m` is computed, and all that computational power might have been wasted.
+
+The original keeps the working value no more than `m`, and this is indicated by the `remainder` operation after every step.
+
+### Exercise 1.26
+
+> "...you have transformed the $\Theta\left(\log n\right)$ process into a $\Theta\left(n\right)$ process."
+
+Consider first why the `square` procedure is being used. This is to avoid computing the value twice, as `(expmod base (/ exp 2) m)` would have already been evaluated and stored somewhere, and what is left to be done is to multiply its value by itself.
+
+By using `(* (expmod base (/ exp 2) m) (expmod base (/ exp 2) m))`, computation would be done *twice* every recursive call. By doubling `exp`, the number of calls it takes to compute will then double, compared to just increasing by one if `square` were used.
+
+This can be proven using induction. Suppose that `expmod` takes $T\left(n\right)$ time to compute where $n$ is our `exp`. If we double `exp`, the time it takes for the `(remainder (* ...))` code to run will be $2T\left(n\right)$, since each `expmod` call takes $T\left(n\right)$. Because of this linear relationship, $\Theta\left(T\left(n\right)\right)=\Theta\left(n\right)$
+
+### Exercise 1.27
+
+```scheme
+(define (test-camichael n)
+  (define (expmod base exp m)
+    (define (even? n) (= (remainder n 2) 0))
+    (define (square x) (* x x))
+    (cond
+      ((= exp 0) 1)
+      ((even? exp) (remainder (square (expmod base (/ exp 2) m)) m))
+      (else (remainder (* base (expmod base (- exp 1) m)) m))))
+  ; test-camichael-recursive tests for every a < n. Once `a` reaches `n` return true.
+  (define (test-camichael-recursive a n)
+    (cond
+      ((= a n) #t)
+      ((not (= (expmod a n n) a)) #f)
+      (else (test-camichael-recursive (+ a 1) n))))
+  (test-camichael-recursive 2 n))
+(test-camichael 561)   ; ==> #t
+(test-camichael 1105)  ; ==> #t
+(test-camichael 1729)  ; ==> #t
+(test-camichael 2465)  ; ==> #t
+(test-camichael 2821)  ; ==> #t
+(test-camichael 6601)  ; ==> #t
+```
+
+### Exercise 1.28
+
+```scheme
+; miller-rabin checks if n is prime
+(define (miller-rabin n)
+  ; expmod is special.
+  ; It returns 0 if it detects a "nontrivial square root of 1 mod n"
+  (define (expmod base exp m)
+    (define (special-case n)
+      ; if-nsr-then-zero checks if n is a non-trivial square root of 1 mod m and returns zero if so
+      (define (if-nsr-then-zero n sq)
+        (define (neq a b) (not (= a b)))
+        (if (and (neq n 1) (neq n (- m 1)) (= sq 1)) 0 sq))
+      (if-nsr-then-zero n (remainder (square n) m)))
+    (define (even? n) (= (remainder n 2) 0))
+    (define (square n) (* n n))
+    (cond
+      ((= exp 0) 1)
+      ((even? exp) (special-case (expmod base (/ exp 2) m)))
+      (else (remainder (* base (expmod base (- exp 1) m)) m))))
+  
+  (define (test n)
+    (define (try-it a)
+      (= (expmod a (- n 1) n) 1))
+    (try-it (+ 1 (random (- n 1)))))
+  (define (test-times times)
+    (cond ((= times 0) #t)
+      ((test n) (test-times (- times 1)))
+      (else #f)))
+  (test-times 3))
+
+; non-primes
+(miller-rabin 2821) ; ==> #f
+(miller-rabin 1105) ; ==> #f
+(miller-rabin 1729) ; ==> #f
+(miller-rabin 2465) ; ==> #f
+(miller-rabin 2821) ; ==> #f
+(miller-rabin 6601) ; ==> #f
+
+; primes
+(miller-rabin 3162280000021) ; ==> #t
+(miller-rabin 3162280000043) ; ==> #t
+(miller-rabin 3162280000109) ; ==> #t
+```
+
+## 1.3 Formulating Abstractions with Higher-Order Procedures
+
+### Exercise 1.29
+
+```scheme
+; simpson performs a Simpson's Rule integration of f from a to b.
+; n denotes accuracy (and is implicitly turned even)
+(define (simpson f a b n)
+  (define m (if (= 1 (remainder n 2)) (+ n 1) n)) ; "new n"
+  (define h (/ (- b a) n))  ; we'll turn it into a floating-point later
+  (define (y k) (f (+ a (* k h))))
+  (define (add-two x) (+ x 2))
+  (* (/ h 3.0)
+    (+ (y 0)
+      (y n)
+      (* 4 (sum y 1 add-two (- m 1)))
+      (* 2 (sum y 2 add-two (- m 2))))))
+(simpson cube 0 1 1000) ; ==> 0.25
+```
+
+### Exercise 1.30
+
+```scheme
+(define (sum term a next b)
+  (define (iter a result)
+    (if (> a b)
+      result
+      (iter (next a) (+ result (term a)))))
+  (iter a 0))
+```
+
+### Exercise 1.31
+
+```scheme
+(define (product term a next b)
+  (if (> a b)
+    1
+    (* (term a) (product term (next a) next b))))
+; approx-pi evaluates pi to some accuracy level n
+(define (approx-pi n)
+  (define (inc n) (+ n 1))
+  ; term n is as follows: (term 1) = 2/3; (term 2) = 4/3; (term 3) = 4/5; ...
+  (define (term n)
+    (define numerator (+ 2.0 (- n (remainder n 2))))
+    (define denominator (+ 2.0 (- n (remainder (+ n 1) 2))))
+    (/ numerator denominator))
+  (* 4.0 (product term 1 inc n)))
+(approx-pi 10000) ; ==> 3.1417497057379635 (not a very good job at approximating now huh)
+```
+
+Similarly, an iterative solution can be used:
+
+```scheme
+(define (product term a next b)
+  (define (iter a result)
+    (if (> a b)
+      result
+      (iter (next a) (* result (term a)))))
+  (iter a 1))
+(approx-pi 10000) ; ==> 3.1417497057380084
+```
+
+### Exercise 1.32
+
+```scheme
+(define (accumulate combiner null-value term a next b)
+  (if (> a b)
+    null-value
+    (combiner (term a) (accumulate combiner null-value term (next a) next b))))
+(define (sum term a next b) (accumulate + 0 term a next b))
+(define (product term a next b) (accumulate * 1 term a next b))
+```
+
+Similarly, an iterative solution can be used:
+
+```scheme
+(define (accumulate combiner null-value term a next b)
+  (define (iter a result)
+    (if (> a b)
+      result
+      (iter (next a) (combiner result (term a)))))
+  (iter a null-value))
+```
