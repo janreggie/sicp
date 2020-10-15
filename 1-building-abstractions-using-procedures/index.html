@@ -184,6 +184,42 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-125" class="nav-link">Exercise 1.25</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-126" class="nav-link">Exercise 1.26</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-127" class="nav-link">Exercise 1.27</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-128" class="nav-link">Exercise 1.28</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#13-formulating-abstractions-with-higher-order-procedures" class="nav-link">1.3 Formulating Abstractions with Higher-Order Procedures</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="3"><a href="#exercise-129" class="nav-link">Exercise 1.29</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-130" class="nav-link">Exercise 1.30</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-131" class="nav-link">Exercise 1.31</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-132" class="nav-link">Exercise 1.32</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
               </ul>
@@ -945,7 +981,167 @@ T^2\left(p,q\right) &amp;= T\left(p^2+q^2, 2pq+q^2\right)
 ; 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001591 is a prime *** .4500000000000002
 </code></pre>
 
-<p>After each iteration the base is squared, leading to a near tripling of checking time: <span class="arithmatex">\(T\left(n^2\right) \approx 3T\left(n\right)\)</span>. This satisfies <span class="arithmatex">\(\Theta\left(T\left(n\right)\right)=\Theta\left(\log n\right)\)</span>.</p></div>
+<p>After each iteration the base is squared, leading to a near tripling of checking time: <span class="arithmatex">\(T\left(n^2\right) \approx 3T\left(n\right)\)</span>. This satisfies <span class="arithmatex">\(\Theta\left(T\left(n\right)\right)=\Theta\left(\log n\right)\)</span>.</p>
+<h3 id="exercise-125">Exercise 1.25<a class="headerlink" href="#exercise-125" title="Permanent link">&para;</a></h3>
+<p>The original procedure is as follows:</p>
+<pre><code class="scheme">(define (expmod base exp m)
+  (define (square x) (* x x))
+  (cond ((= exp 0) 1)
+    ((even? exp) (remainder (square (expmod base (/ exp 2) m)) m))
+    (else (remainder (* base (expmod base (- exp 1) m)) m))))
+</code></pre>
+
+<p>and the modified is as follows:</p>
+<pre><code class="scheme">(define (expmod base exp m)
+  (remainder (fast-expt base exp) m))
+</code></pre>
+
+<p>The issue here is that <code>(fast-expt ...)</code> has to be evaluated first, and <code>base</code> and <code>exp</code> can be ridiculously high. After all of that, its remainder when divided by <code>m</code> is computed, and all that computational power might have been wasted.</p>
+<p>The original keeps the working value no more than <code>m</code>, and this is indicated by the <code>remainder</code> operation after every step.</p>
+<h3 id="exercise-126">Exercise 1.26<a class="headerlink" href="#exercise-126" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>"...you have transformed the <span class="arithmatex">\(\Theta\left(\log n\right)\)</span> process into a <span class="arithmatex">\(\Theta\left(n\right)\)</span> process."</p>
+</blockquote>
+<p>Consider first why the <code>square</code> procedure is being used. This is to avoid computing the value twice, as <code>(expmod base (/ exp 2) m)</code> would have already been evaluated and stored somewhere, and what is left to be done is to multiply its value by itself.</p>
+<p>By using <code>(* (expmod base (/ exp 2) m) (expmod base (/ exp 2) m))</code>, computation would be done <em>twice</em> every recursive call. By doubling <code>exp</code>, the number of calls it takes to compute will then double, compared to just increasing by one if <code>square</code> were used.</p>
+<p>This can be proven using induction. Suppose that <code>expmod</code> takes <span class="arithmatex">\(T\left(n\right)\)</span> time to compute where <span class="arithmatex">\(n\)</span> is our <code>exp</code>. If we double <code>exp</code>, the time it takes for the <code>(remainder (* ...))</code> code to run will be <span class="arithmatex">\(2T\left(n\right)\)</span>, since each <code>expmod</code> call takes <span class="arithmatex">\(T\left(n\right)\)</span>. Because of this linear relationship, <span class="arithmatex">\(\Theta\left(T\left(n\right)\right)=\Theta\left(n\right)\)</span></p>
+<h3 id="exercise-127">Exercise 1.27<a class="headerlink" href="#exercise-127" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (test-camichael n)
+  (define (expmod base exp m)
+    (define (even? n) (= (remainder n 2) 0))
+    (define (square x) (* x x))
+    (cond
+      ((= exp 0) 1)
+      ((even? exp) (remainder (square (expmod base (/ exp 2) m)) m))
+      (else (remainder (* base (expmod base (- exp 1) m)) m))))
+  ; test-camichael-recursive tests for every a &lt; n. Once `a` reaches `n` return true.
+  (define (test-camichael-recursive a n)
+    (cond
+      ((= a n) #t)
+      ((not (= (expmod a n n) a)) #f)
+      (else (test-camichael-recursive (+ a 1) n))))
+  (test-camichael-recursive 2 n))
+(test-camichael 561)   ; ==&gt; #t
+(test-camichael 1105)  ; ==&gt; #t
+(test-camichael 1729)  ; ==&gt; #t
+(test-camichael 2465)  ; ==&gt; #t
+(test-camichael 2821)  ; ==&gt; #t
+(test-camichael 6601)  ; ==&gt; #t
+</code></pre>
+
+<h3 id="exercise-128">Exercise 1.28<a class="headerlink" href="#exercise-128" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; miller-rabin checks if n is prime
+(define (miller-rabin n)
+  ; expmod is special.
+  ; It returns 0 if it detects a &quot;nontrivial square root of 1 mod n&quot;
+  (define (expmod base exp m)
+    (define (special-case n)
+      ; if-nsr-then-zero checks if n is a non-trivial square root of 1 mod m and returns zero if so
+      (define (if-nsr-then-zero n sq)
+        (define (neq a b) (not (= a b)))
+        (if (and (neq n 1) (neq n (- m 1)) (= sq 1)) 0 sq))
+      (if-nsr-then-zero n (remainder (square n) m)))
+    (define (even? n) (= (remainder n 2) 0))
+    (define (square n) (* n n))
+    (cond
+      ((= exp 0) 1)
+      ((even? exp) (special-case (expmod base (/ exp 2) m)))
+      (else (remainder (* base (expmod base (- exp 1) m)) m))))
+
+  (define (test n)
+    (define (try-it a)
+      (= (expmod a (- n 1) n) 1))
+    (try-it (+ 1 (random (- n 1)))))
+  (define (test-times times)
+    (cond ((= times 0) #t)
+      ((test n) (test-times (- times 1)))
+      (else #f)))
+  (test-times 3))
+
+; non-primes
+(miller-rabin 2821) ; ==&gt; #f
+(miller-rabin 1105) ; ==&gt; #f
+(miller-rabin 1729) ; ==&gt; #f
+(miller-rabin 2465) ; ==&gt; #f
+(miller-rabin 2821) ; ==&gt; #f
+(miller-rabin 6601) ; ==&gt; #f
+
+; primes
+(miller-rabin 3162280000021) ; ==&gt; #t
+(miller-rabin 3162280000043) ; ==&gt; #t
+(miller-rabin 3162280000109) ; ==&gt; #t
+</code></pre>
+
+<h2 id="13-formulating-abstractions-with-higher-order-procedures">1.3 Formulating Abstractions with Higher-Order Procedures<a class="headerlink" href="#13-formulating-abstractions-with-higher-order-procedures" title="Permanent link">&para;</a></h2>
+<h3 id="exercise-129">Exercise 1.29<a class="headerlink" href="#exercise-129" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; simpson performs a Simpson's Rule integration of f from a to b.
+; n denotes accuracy (and is implicitly turned even)
+(define (simpson f a b n)
+  (define m (if (= 1 (remainder n 2)) (+ n 1) n)) ; &quot;new n&quot;
+  (define h (/ (- b a) n))  ; we'll turn it into a floating-point later
+  (define (y k) (f (+ a (* k h))))
+  (define (add-two x) (+ x 2))
+  (* (/ h 3.0)
+    (+ (y 0)
+      (y n)
+      (* 4 (sum y 1 add-two (- m 1)))
+      (* 2 (sum y 2 add-two (- m 2))))))
+(simpson cube 0 1 1000) ; ==&gt; 0.25
+</code></pre>
+
+<h3 id="exercise-130">Exercise 1.30<a class="headerlink" href="#exercise-130" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (sum term a next b)
+  (define (iter a result)
+    (if (&gt; a b)
+      result
+      (iter (next a) (+ result (term a)))))
+  (iter a 0))
+</code></pre>
+
+<h3 id="exercise-131">Exercise 1.31<a class="headerlink" href="#exercise-131" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (product term a next b)
+  (if (&gt; a b)
+    1
+    (* (term a) (product term (next a) next b))))
+; approx-pi evaluates pi to some accuracy level n
+(define (approx-pi n)
+  (define (inc n) (+ n 1))
+  ; term n is as follows: (term 1) = 2/3; (term 2) = 4/3; (term 3) = 4/5; ...
+  (define (term n)
+    (define numerator (+ 2.0 (- n (remainder n 2))))
+    (define denominator (+ 2.0 (- n (remainder (+ n 1) 2))))
+    (/ numerator denominator))
+  (* 4.0 (product term 1 inc n)))
+(approx-pi 10000) ; ==&gt; 3.1417497057379635 (not a very good job at approximating now huh)
+</code></pre>
+
+<p>Similarly, an iterative solution can be used:</p>
+<pre><code class="scheme">(define (product term a next b)
+  (define (iter a result)
+    (if (&gt; a b)
+      result
+      (iter (next a) (* result (term a)))))
+  (iter a 1))
+(approx-pi 10000) ; ==&gt; 3.1417497057380084
+</code></pre>
+
+<h3 id="exercise-132">Exercise 1.32<a class="headerlink" href="#exercise-132" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (accumulate combiner null-value term a next b)
+  (if (&gt; a b)
+    null-value
+    (combiner (term a) (accumulate combiner null-value term (next a) next b))))
+(define (sum term a next b) (accumulate + 0 term a next b))
+(define (product term a next b) (accumulate * 1 term a next b))
+</code></pre>
+
+<p>Similarly, an iterative solution can be used:</p>
+<pre><code class="scheme">(define (accumulate combiner null-value term a next b)
+  (define (iter a result)
+    (if (&gt; a b)
+      result
+      (iter (next a) (combiner result (term a)))))
+  (iter a null-value))
+</code></pre></div>
             </div>
         </div>
 
