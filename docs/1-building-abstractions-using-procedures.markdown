@@ -1031,3 +1031,67 @@ Similarly, an iterative solution can be used:
       (iter (next a) (combiner result (term a)))))
   (iter a null-value))
 ```
+
+### Exercise 1.33
+
+```scheme
+; filtered-accumulate accumulates term(i) from a to b inclusive that satisfy filter(i)
+(define (filtered-accumulate combiner null-value term a next b filter)
+  (define (iter a result)
+    (cond
+      ((> a b) result)
+      ((filter a) (iter (next a) (combiner result (term a))))
+      (else (iter (next a) result))))
+  (iter a null-value))
+
+; sum-of-square-of-primes computes sum of square of primes from a to b inclusive
+(define (sum-of-square-of-primes a b)
+  (define (square n) (* n n))
+  (define (inc n) (+ n 1))
+  (define (prime? n)
+    (define (smallest-divisor n)
+      (define (divides? a b) (= (remainder b a) 0))
+
+      (define (find-divisor n test-divisor)
+        (cond ((> (square test-divisor) n) n)
+          ((divides? test-divisor n) test-divisor)
+          (else (find-divisor n (+ test-divisor 1)))))
+      
+      (find-divisor n 2))
+    (if (< n 2) #f (= n (smallest-divisor n)))) ; disclude <= 2
+  (filtered-accumulate + 0 square a inc b prime?))
+(sum-of-square-of-primes 1 10) ; ==> 4+9+25+49 = 87
+
+; product-of-relative-primes returns the product of i from 1 to n where gcd(i,n) == 1
+(define (product-of-relative-primes n)
+  (define (gcd a b)
+    (if (= b 0)
+      a
+      (gcd b (remainder a b))))
+  (define (is-relatively-prime x) (= (gcd x n) 1))
+  (define (identity x) x)
+  (define (inc x) (+ x 1))
+  (filtered-accumulate * 1 identity 1 inc n is-relatively-prime))
+(product-of-relative-primes 10) ; ==> 1*3*7*9 = 189
+```
+
+### Exercise 1.34
+
+```scheme
+(define (f g) (g 2))
+(f square) ; ==> (square 2) = 4
+(f (lambda (z) (* z (+ z 1)))) ; ==> (* 2 (+ 2 1)) = 6
+
+(f f)
+; (f 2)
+; (2 2)
+```
+
+But since `2` is not a callable function, the interpreter outputs an error.
+
+```scheme
+;The object 2 is not applicable.
+;To continue, call RESTART with an option number:
+; (RESTART 2) => Specify a procedure to use in its place.
+; (RESTART 1) => Return to read-eval-print level 1.
+```
