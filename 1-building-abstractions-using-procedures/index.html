@@ -220,6 +220,14 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-133" class="nav-link">Exercise 1.33</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-134" class="nav-link">Exercise 1.34</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
               </ul>
@@ -1141,6 +1149,64 @@ T^2\left(p,q\right) &amp;= T\left(p^2+q^2, 2pq+q^2\right)
       result
       (iter (next a) (combiner result (term a)))))
   (iter a null-value))
+</code></pre>
+
+<h3 id="exercise-133">Exercise 1.33<a class="headerlink" href="#exercise-133" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; filtered-accumulate accumulates term(i) from a to b inclusive that satisfy filter(i)
+(define (filtered-accumulate combiner null-value term a next b filter)
+  (define (iter a result)
+    (cond
+      ((&gt; a b) result)
+      ((filter a) (iter (next a) (combiner result (term a))))
+      (else (iter (next a) result))))
+  (iter a null-value))
+
+; sum-of-square-of-primes computes sum of square of primes from a to b inclusive
+(define (sum-of-square-of-primes a b)
+  (define (square n) (* n n))
+  (define (inc n) (+ n 1))
+  (define (prime? n)
+    (define (smallest-divisor n)
+      (define (divides? a b) (= (remainder b a) 0))
+
+      (define (find-divisor n test-divisor)
+        (cond ((&gt; (square test-divisor) n) n)
+          ((divides? test-divisor n) test-divisor)
+          (else (find-divisor n (+ test-divisor 1)))))
+
+      (find-divisor n 2))
+    (if (&lt; n 2) #f (= n (smallest-divisor n)))) ; disclude &lt;= 2
+  (filtered-accumulate + 0 square a inc b prime?))
+(sum-of-square-of-primes 1 10) ; ==&gt; 4+9+25+49 = 87
+
+; product-of-relative-primes returns the product of i from 1 to n where gcd(i,n) == 1
+(define (product-of-relative-primes n)
+  (define (gcd a b)
+    (if (= b 0)
+      a
+      (gcd b (remainder a b))))
+  (define (is-relatively-prime x) (= (gcd x n) 1))
+  (define (identity x) x)
+  (define (inc x) (+ x 1))
+  (filtered-accumulate * 1 identity 1 inc n is-relatively-prime))
+(product-of-relative-primes 10) ; ==&gt; 1*3*7*9 = 189
+</code></pre>
+
+<h3 id="exercise-134">Exercise 1.34<a class="headerlink" href="#exercise-134" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (f g) (g 2))
+(f square) ; ==&gt; (square 2) = 4
+(f (lambda (z) (* z (+ z 1)))) ; ==&gt; (* 2 (+ 2 1)) = 6
+
+(f f)
+; (f 2)
+; (2 2)
+</code></pre>
+
+<p>But since <code>2</code> is not a callable function, the interpreter outputs an error.</p>
+<pre><code class="scheme">;The object 2 is not applicable.
+;To continue, call RESTART with an option number:
+; (RESTART 2) =&gt; Specify a procedure to use in its place.
+; (RESTART 1) =&gt; Return to read-eval-print level 1.
 </code></pre></div>
             </div>
         </div>
