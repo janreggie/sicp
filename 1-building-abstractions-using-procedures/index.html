@@ -228,6 +228,50 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-135" class="nav-link">Exercise 1.35</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-136" class="nav-link">Exercise 1.36</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-137" class="nav-link">Exercise 1.37</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-138" class="nav-link">Exercise 1.38</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-139" class="nav-link">Exercise 1.39</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-140" class="nav-link">Exercise 1.40</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-141" class="nav-link">Exercise 1.41</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-142" class="nav-link">Exercise 1.42</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-143" class="nav-link">Exercise 1.43</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-144" class="nav-link">Exercise 1.44</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-145" class="nav-link">Exercise 1.45</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
               </ul>
@@ -1207,7 +1251,215 @@ T^2\left(p,q\right) &amp;= T\left(p^2+q^2, 2pq+q^2\right)
 ;To continue, call RESTART with an option number:
 ; (RESTART 2) =&gt; Specify a procedure to use in its place.
 ; (RESTART 1) =&gt; Return to read-eval-print level 1.
-</code></pre></div>
+</code></pre>
+
+<h3 id="exercise-135">Exercise 1.35<a class="headerlink" href="#exercise-135" title="Permanent link">&para;</a></h3>
+<p>Note that the fixed point for <span class="arithmatex">\(f\left(x\right)=1+\frac{1}{x}\)</span> solves the equation <span class="arithmatex">\(x=1+\frac{1}{x}\)</span>, which can be rewritten to <span class="arithmatex">\(x^2-x-1=0\)</span>. Solving the quadratic equation leads <span class="arithmatex">\(x=\frac{1\pm\sqrt{5}}{2}\)</span>. This means that <span class="arithmatex">\(\phi=\frac{1+\sqrt{5}}{2}\)</span> is <em>a</em>, but not the only, fixed point for the transformation.</p>
+<p>Let us then write a procedure to evaluate <span class="arithmatex">\(\phi\)</span> using <code>fixed-point</code>.</p>
+<pre><code class="scheme">(fixed-point (lambda (x) (+ 1 (/ 1 x))) 1.0) ; ==&gt; 1.618...
+</code></pre>
+
+<h3 id="exercise-136">Exercise 1.36<a class="headerlink" href="#exercise-136" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (fixed-point f first-guess)
+  (define (close-enough x y) (&lt; (abs (- x y)) 0.00001))
+  ; print-approx just prints out x and a newline
+  (define (print-approx x)
+    (newline)
+    (display &quot;Checking &quot;)
+    (display x))
+  (define (try guess)
+    (let ((next (f guess)))
+      (print-approx guess)
+      (if (close-enough guess next)
+        next
+        (try next))))
+  (try first-guess))
+(fixed-point (lambda (x) (/ (log 1000) (log x))) 3)
+; Checking 3
+; Checking 6.287709822868153
+; Checking 3.757079790200296
+; Checking 5.218748919675315
+; Checking 4.180797746063314
+; Checking 4.828902657081293
+; Checking 4.386936895811029
+; Checking 4.671722808746095
+; Checking 4.481109436117821
+; Checking 4.605567315585735
+; Checking 4.522955348093164
+; Checking 4.577201597629606
+; Checking 4.541325786357399
+; Checking 4.564940905198754
+; Checking 4.549347961475409
+; Checking 4.5596228442307565
+; Checking 4.552843114094703
+; Checking 4.55731263660315
+; Checking 4.554364381825887
+; Checking 4.556308401465587
+; Checking 4.555026226620339
+; Checking 4.55587174038325
+; Checking 4.555314115211184
+; Checking 4.555681847896976
+; Checking 4.555439330395129
+; Checking 4.555599264136406
+; Checking 4.555493789937456
+; Checking 4.555563347820309
+; Checking 4.555517475527901
+; Checking 4.555547727376273
+; Checking 4.555527776815261
+; Checking 4.555540933824255
+; ==&gt; 4.555532257016376
+</code></pre>
+
+<h3 id="exercise-137">Exercise 1.37<a class="headerlink" href="#exercise-137" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; const-frac evaluates the k-term finite continued fraction
+; where n(i), d(i) are terms where i is from 1 to k.
+(define (const-frac n d k)
+  (define (const-frac-iter i)
+    (if (&gt; i k)
+      0
+      (/ (n i) (+ (d i) (const-frac-iter (+ i 1))))))
+  (const-frac-iter 1))
+; silver-ratio returns the silver ratio (0.61803..) using const-frac with k iterations
+(define (silver-ratio k)
+  (const-frac (lambda (i) 1.0) (lambda (i) 1.0) k))
+(silver-ratio 1)  ; ==&gt; 1.0
+(silver-ratio 2)  ; ==&gt; 0.5
+(silver-ratio 3)  ; ==&gt; 0.6667
+(silver-ratio 4)  ; ==&gt; 0.6000
+(silver-ratio 5)  ; ==&gt; 0.625
+(silver-ratio 10) ; ==&gt; 0.6179775280898876
+(silver-ratio 15) ; ==&gt; 0.6180344478216819
+(silver-ratio 20) ; ==&gt; 0.6180339850173578
+(silver-ratio 25) ; ==&gt; 0.6180339887802426
+(silver-ratio 50) ; ==&gt; 0.6180339887498948
+</code></pre>
+
+<p>Similarly, an iterative solution can be written:</p>
+<pre><code class="scheme">(define (const-frac n d k)
+  ; i counts BACKWARDS!
+  (define (const-frac-iter i result)
+    (if (= i 0)
+      result
+      (const-frac-iter (- i 1) (/ (n i) (+ (d i) result)))))
+  (const-frac-iter k 0))
+(silver-ratio 1)  ; ==&gt; 1.0
+(silver-ratio 2)  ; ==&gt; 0.5
+(silver-ratio 3)  ; ==&gt; 0.6666666666666666
+(silver-ratio 4)  ; ==&gt; 0.6000000000000001
+(silver-ratio 5)  ; ==&gt; 0.625
+(silver-ratio 10) ; ==&gt; 0.6179775280898876
+(silver-ratio 15) ; ==&gt; 0.6180344478216819
+(silver-ratio 20) ; ==&gt; 0.6180339850173578
+(silver-ratio 25) ; ==&gt; 0.6180339887802426
+(silver-ratio 50) ; ==&gt; 0.6180339887498948
+</code></pre>
+
+<p>The result becomes accurate to four decimal places by <code>k=10</code>.</p>
+<h3 id="exercise-138">Exercise 1.38<a class="headerlink" href="#exercise-138" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; approx-e-less-2 computes the approximation of e-2
+; using Euler's continued fraction and const-frac.
+; k is the number of iterations to be done
+(define (approx-e-less-2 k)
+  (define (N i)
+    1.0)
+  (define (D i)
+    (if (= 2 (remainder i 3))
+      (* (/ (+ i 1) 3) 2)
+      1))
+  (const-frac N D k))
+(approx-e-less-2 10) ; ==&gt; 0.7182817182817183
+</code></pre>
+
+<h3 id="exercise-139">Exercise 1.39<a class="headerlink" href="#exercise-139" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; tan-cf computes the tangent of x (radians) using const-frac.
+; Note that k might have to be large if x were large.
+(define (tan-cf x k)
+  (define (N i)
+    (if (= i 1)
+      x
+      (- (* x x))))
+  (define (D i)
+    (- (* 2 i) 1.0))
+  (const-frac N D k))
+(tan 3)       ; ==&gt; -.1425465430742778
+(tan-cf 3 10) ; ==&gt; -.1425465438397583
+</code></pre>
+
+<h3 id="exercise-140">Exercise 1.40<a class="headerlink" href="#exercise-140" title="Permanent link">&para;</a></h3>
+<p>This is trivial to implement.</p>
+<pre><code class="scheme">; cubic represents a cubic equation x^3+ax^2+bx+c
+(define (cubic a b c)
+  (lambda (x) (+ (* x x x) (* a x x) (* b x) c)))
+</code></pre>
+
+<h3 id="exercise-141">Exercise 1.41<a class="headerlink" href="#exercise-141" title="Permanent link">&para;</a></h3>
+<p>This is also trivial to implement but somehow difficult to wrap around.</p>
+<pre><code class="scheme">; double returns a wrapped function such that f -&gt; f(f) where f : val -&gt; val
+(define (double f) (lambda (x) (f (f x))))
+(define (inc x) (+ x 1))
+(((double (double double)) inc) 5) 
+; (((double (lambda (f) (double (double f)))) inc) 5) ; substitute the parent double
+; (((lambda (f) (double (double (double (double f))))) inc) 5)
+; ((double (double (double (double inc)))) 5)
+; ((double (double (double (lambda (x) (inc (inc x)))))) 5)
+; ((double (double (lambda (x) (inc (inc (inc (inc x))))))) 5)
+; ((double (lambda (x) (inc (inc (inc (inc (inc (inc (inc (inc x)))))))))) 5)
+; ((lambda (x) (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc x))))))))))))))))) 5)
+; (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc 5))))))))))))))))
+; ==&gt; 21
+</code></pre>
+
+<h3 id="exercise-142">Exercise 1.42<a class="headerlink" href="#exercise-142" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (compose f g)
+  (lambda (x) (f (g x))))
+((compose square inc) 6) ; ==&gt; 49
+</code></pre>
+
+<h3 id="exercise-143">Exercise 1.43<a class="headerlink" href="#exercise-143" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (repeated f n)
+  (define (iter i)
+    (if (= i n)
+      (lambda (x) x)
+      (compose f (iter (+ i 1)))))
+  (iter 0))
+((repeated square 2) 5) ; ==&gt; 625
+</code></pre>
+
+<p>As always, an iterative solution can be found:</p>
+<pre><code class="scheme">(define (repeated f n)
+  (define (iter result i)
+    (if (= i n)
+      result
+      (iter (compose f result) (+ i 1))))
+  (iter f 1))
+((repeated square 2) 5) ; ==&gt; 625
+</code></pre>
+
+<h3 id="exercise-144">Exercise 1.44<a class="headerlink" href="#exercise-144" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; smooth returns a procedure describing a smoothed function
+(define (smooth f)
+  (lambda (x)
+    (+ (f (- x dx))
+      (f x)
+      (f (+ x dx)))))
+
+; smooth-n returns the n-fold smoothed function
+(define (smooth-n f n)
+  (repeated smooth n))
+</code></pre>
+
+<h3 id="exercise-145">Exercise 1.45<a class="headerlink" href="#exercise-145" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; n-th root returns a function for the n'th root of x such that
+; the fixed point of y -&gt; x/y^(n-1) is calculated, and the transformation is done r times.
+(define (nth-root n r)
+  (define (average a b) (/ (+ a b) 2.0))
+  (lambda (x)
+    (define (ave-dump y) (average y (/ x (expt y (- n 1)))))
+    (fixed-point (repeated ave-dump r) 1.0)))
+((nth-root 2 1) 4) ; ==&gt; 2.000000000000002
+</code></pre>
+
+<p>It does not seem to work for degree 6 or higher. Maybe I'm doing something wrong here.</p></div>
             </div>
         </div>
 
