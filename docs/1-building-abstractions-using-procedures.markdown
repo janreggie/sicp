@@ -1095,3 +1095,242 @@ But since `2` is not a callable function, the interpreter outputs an error.
 ; (RESTART 2) => Specify a procedure to use in its place.
 ; (RESTART 1) => Return to read-eval-print level 1.
 ```
+
+### Exercise 1.35
+
+Note that the fixed point for $f\left(x\right)=1+\frac{1}{x}$ solves the equation $x=1+\frac{1}{x}$, which can be rewritten to $x^2-x-1=0$. Solving the quadratic equation leads $x=\frac{1\pm\sqrt{5}}{2}$. This means that $\phi=\frac{1+\sqrt{5}}{2}$ is *a*, but not the only, fixed point for the transformation.
+
+Let us then write a procedure to evaluate $\phi$ using `fixed-point`.
+
+```scheme
+(fixed-point (lambda (x) (+ 1 (/ 1 x))) 1.0) ; ==> 1.618...
+```
+
+### Exercise 1.36
+
+```scheme
+(define (fixed-point f first-guess)
+  (define (close-enough x y) (< (abs (- x y)) 0.00001))
+  ; print-approx just prints out x and a newline
+  (define (print-approx x)
+    (newline)
+    (display "Checking ")
+    (display x))
+  (define (try guess)
+    (let ((next (f guess)))
+      (print-approx guess)
+      (if (close-enough guess next)
+        next
+        (try next))))
+  (try first-guess))
+(fixed-point (lambda (x) (/ (log 1000) (log x))) 3)
+; Checking 3
+; Checking 6.287709822868153
+; Checking 3.757079790200296
+; Checking 5.218748919675315
+; Checking 4.180797746063314
+; Checking 4.828902657081293
+; Checking 4.386936895811029
+; Checking 4.671722808746095
+; Checking 4.481109436117821
+; Checking 4.605567315585735
+; Checking 4.522955348093164
+; Checking 4.577201597629606
+; Checking 4.541325786357399
+; Checking 4.564940905198754
+; Checking 4.549347961475409
+; Checking 4.5596228442307565
+; Checking 4.552843114094703
+; Checking 4.55731263660315
+; Checking 4.554364381825887
+; Checking 4.556308401465587
+; Checking 4.555026226620339
+; Checking 4.55587174038325
+; Checking 4.555314115211184
+; Checking 4.555681847896976
+; Checking 4.555439330395129
+; Checking 4.555599264136406
+; Checking 4.555493789937456
+; Checking 4.555563347820309
+; Checking 4.555517475527901
+; Checking 4.555547727376273
+; Checking 4.555527776815261
+; Checking 4.555540933824255
+; ==> 4.555532257016376
+```
+
+### Exercise 1.37
+
+```scheme
+; const-frac evaluates the k-term finite continued fraction
+; where n(i), d(i) are terms where i is from 1 to k.
+(define (const-frac n d k)
+  (define (const-frac-iter i)
+    (if (> i k)
+      0
+      (/ (n i) (+ (d i) (const-frac-iter (+ i 1))))))
+  (const-frac-iter 1))
+; silver-ratio returns the silver ratio (0.61803..) using const-frac with k iterations
+(define (silver-ratio k)
+  (const-frac (lambda (i) 1.0) (lambda (i) 1.0) k))
+(silver-ratio 1)  ; ==> 1.0
+(silver-ratio 2)  ; ==> 0.5
+(silver-ratio 3)  ; ==> 0.6667
+(silver-ratio 4)  ; ==> 0.6000
+(silver-ratio 5)  ; ==> 0.625
+(silver-ratio 10) ; ==> 0.6179775280898876
+(silver-ratio 15) ; ==> 0.6180344478216819
+(silver-ratio 20) ; ==> 0.6180339850173578
+(silver-ratio 25) ; ==> 0.6180339887802426
+(silver-ratio 50) ; ==> 0.6180339887498948
+```
+
+Similarly, an iterative solution can be written:
+
+```scheme
+(define (const-frac n d k)
+  ; i counts BACKWARDS!
+  (define (const-frac-iter i result)
+    (if (= i 0)
+      result
+      (const-frac-iter (- i 1) (/ (n i) (+ (d i) result)))))
+  (const-frac-iter k 0))
+(silver-ratio 1)  ; ==> 1.0
+(silver-ratio 2)  ; ==> 0.5
+(silver-ratio 3)  ; ==> 0.6666666666666666
+(silver-ratio 4)  ; ==> 0.6000000000000001
+(silver-ratio 5)  ; ==> 0.625
+(silver-ratio 10) ; ==> 0.6179775280898876
+(silver-ratio 15) ; ==> 0.6180344478216819
+(silver-ratio 20) ; ==> 0.6180339850173578
+(silver-ratio 25) ; ==> 0.6180339887802426
+(silver-ratio 50) ; ==> 0.6180339887498948
+```
+
+The result becomes accurate to four decimal places by `k=10`.
+
+### Exercise 1.38
+
+```scheme
+; approx-e-less-2 computes the approximation of e-2
+; using Euler's continued fraction and const-frac.
+; k is the number of iterations to be done
+(define (approx-e-less-2 k)
+  (define (N i)
+    1.0)
+  (define (D i)
+    (if (= 2 (remainder i 3))
+      (* (/ (+ i 1) 3) 2)
+      1))
+  (const-frac N D k))
+(approx-e-less-2 10) ; ==> 0.7182817182817183
+```
+
+### Exercise 1.39
+
+```scheme
+; tan-cf computes the tangent of x (radians) using const-frac.
+; Note that k might have to be large if x were large.
+(define (tan-cf x k)
+  (define (N i)
+    (if (= i 1)
+      x
+      (- (* x x))))
+  (define (D i)
+    (- (* 2 i) 1.0))
+  (const-frac N D k))
+(tan 3)       ; ==> -.1425465430742778
+(tan-cf 3 10) ; ==> -.1425465438397583
+```
+
+### Exercise 1.40
+
+This is trivial to implement.
+
+```scheme
+; cubic represents a cubic equation x^3+ax^2+bx+c
+(define (cubic a b c)
+  (lambda (x) (+ (* x x x) (* a x x) (* b x) c)))
+```
+
+### Exercise 1.41
+
+This is also trivial to implement but somehow difficult to wrap around.
+
+```scheme
+; double returns a wrapped function such that f -> f(f) where f : val -> val
+(define (double f) (lambda (x) (f (f x))))
+(define (inc x) (+ x 1))
+(((double (double double)) inc) 5) 
+; (((double (lambda (f) (double (double f)))) inc) 5) ; substitute the parent double
+; (((lambda (f) (double (double (double (double f))))) inc) 5)
+; ((double (double (double (double inc)))) 5)
+; ((double (double (double (lambda (x) (inc (inc x)))))) 5)
+; ((double (double (lambda (x) (inc (inc (inc (inc x))))))) 5)
+; ((double (lambda (x) (inc (inc (inc (inc (inc (inc (inc (inc x)))))))))) 5)
+; ((lambda (x) (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc x))))))))))))))))) 5)
+; (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc (inc 5))))))))))))))))
+; ==> 21
+```
+
+### Exercise 1.42
+
+```scheme
+(define (compose f g)
+  (lambda (x) (f (g x))))
+((compose square inc) 6) ; ==> 49
+```
+
+### Exercise 1.43
+
+```scheme
+(define (repeated f n)
+  (define (iter i)
+    (if (= i n)
+      (lambda (x) x)
+      (compose f (iter (+ i 1)))))
+  (iter 0))
+((repeated square 2) 5) ; ==> 625
+```
+
+As always, an iterative solution can be found:
+
+```scheme
+(define (repeated f n)
+  (define (iter result i)
+    (if (= i n)
+      result
+      (iter (compose f result) (+ i 1))))
+  (iter f 1))
+((repeated square 2) 5) ; ==> 625
+```
+
+### Exercise 1.44
+
+```scheme
+; smooth returns a procedure describing a smoothed function
+(define (smooth f)
+  (lambda (x)
+    (+ (f (- x dx))
+      (f x)
+      (f (+ x dx)))))
+
+; smooth-n returns the n-fold smoothed function
+(define (smooth-n f n)
+  (repeated smooth n))
+```
+
+### Exercise 1.45
+
+```scheme
+; n-th root returns a function for the n'th root of x such that
+; the fixed point of y -> x/y^(n-1) is calculated, and the transformation is done r times.
+(define (nth-root n r)
+  (define (average a b) (/ (+ a b) 2.0))
+  (lambda (x)
+    (define (ave-dump y) (average y (/ x (expt y (- n 1)))))
+    (fixed-point (repeated ave-dump r) 1.0)))
+((nth-root 2 1) 4) ; ==> 2.000000000000002
+```
+
+It does not seem to work for degree 6 or higher. Maybe I'm doing something wrong here.
