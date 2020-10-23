@@ -1311,9 +1311,11 @@ As always, an iterative solution can be found:
 ; smooth returns a procedure describing a smoothed function
 (define (smooth f)
   (lambda (x)
-    (+ (f (- x dx))
-      (f x)
-      (f (+ x dx)))))
+    (/
+      (+ (f (- x dx))
+        (f x)
+        (f (+ x dx)))
+      3))
 
 ; smooth-n returns the n-fold smoothed function
 (define (smooth-n f n)
