@@ -41,6 +41,9 @@
                             <li class="navitem active">
                                 <a href="./" class="nav-link">1</a>
                             </li>
+                            <li class="navitem">
+                                <a href="../2-building-abstractions-with-data/" class="nav-link">2</a>
+                            </li>
                         </ul>
 
                     <ul class="nav navbar-nav ml-auto">
@@ -55,7 +58,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" class="nav-link disabled">
+                                <a rel="next" href="../2-building-abstractions-with-data/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
@@ -269,6 +272,10 @@
               </ul>
             </li>
             <li class="nav-item" data-level="3"><a href="#exercise-145" class="nav-link">Exercise 1.45</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-146" class="nav-link">Exercise 1.46</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -1397,7 +1404,7 @@ T^2\left(p,q\right) &amp;= T\left(p^2+q^2, 2pq+q^2\right)
 <pre><code class="scheme">; double returns a wrapped function such that f -&gt; f(f) where f : val -&gt; val
 (define (double f) (lambda (x) (f (f x))))
 (define (inc x) (+ x 1))
-(((double (double double)) inc) 5) 
+(((double (double double)) inc) 5)
 ; (((double (lambda (f) (double (double f)))) inc) 5) ; substitute the parent double
 ; (((lambda (f) (double (double (double (double f))))) inc) 5)
 ; ((double (double (double (double inc)))) 5)
@@ -1439,9 +1446,11 @@ T^2\left(p,q\right) &amp;= T\left(p^2+q^2, 2pq+q^2\right)
 <pre><code class="scheme">; smooth returns a procedure describing a smoothed function
 (define (smooth f)
   (lambda (x)
-    (+ (f (- x dx))
-      (f x)
-      (f (+ x dx)))))
+    (/
+      (+ (f (- x dx))
+        (f x)
+        (f (+ x dx)))
+      3))
 
 ; smooth-n returns the n-fold smoothed function
 (define (smooth-n f n)
@@ -1459,7 +1468,46 @@ T^2\left(p,q\right) &amp;= T\left(p^2+q^2, 2pq+q^2\right)
 ((nth-root 2 1) 4) ; ==&gt; 2.000000000000002
 </code></pre>
 
-<p>It does not seem to work for degree 6 or higher. Maybe I'm doing something wrong here.</p></div>
+<p>It does not seem to work for degree 6 or higher. Maybe I'm doing something wrong here.</p>
+<h3 id="exercise-146">Exercise 1.46<a class="headerlink" href="#exercise-146" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; iterative-improve returns a procedure which gets on improved upon while it is not yet good enough.
+; good-enough? returns true if the value is indeed good enough. (val ==&gt; false)
+; improve improves upon the guess (val ==&gt; val)
+(define (iterative-improve good-enough? improve)
+  (define (rinse-and-repeat x)
+    (if (good-enough? x)
+      x
+      (rinse-and-repeat (improve x))))
+  (lambda (x) (rinse-and-repeat x)))
+
+(define (sqrt x)
+  (define (square x) (* x x))
+  (define (average x y) (/ (+ x y) 2))
+  (define (print-approx x)
+    (newline)
+    (display &quot;Checking &quot;)
+    (display x))
+
+  (define (improve guess)
+    (average guess (/ x guess)))
+
+  (define (good-enough? guess)
+    (&lt; (abs (- (square guess) x)) 0.001))
+
+  ; multiply by 1.0 to turn to floating-point
+  ((iterative-improve good-enough? improve) (* x 1.0)))
+
+(sqrt 103) ; ==&gt; 10.14889156529969
+
+(define (fixed-point f first-guess)
+  (define (good-enough? x) (&lt; (abs (- x (f x))) 0.000001))
+  (define (improve x) (f x))
+  ((iterative-improve good-enough? improve) first-guess))
+
+(fixed-point cos 1.0) ; ==&gt; .7390845495752126
+</code></pre>
+
+<p>Note that, with <code>fixed-point</code>, computing for <code>(f x)</code> may need to be done <em>twice</em>: the first time to check if the value is good enough, and the second to improve the guess.</p></div>
             </div>
         </div>
 
