@@ -1056,7 +1056,7 @@ Similarly, an iterative solution can be used:
         (cond ((> (square test-divisor) n) n)
           ((divides? test-divisor n) test-divisor)
           (else (find-divisor n (+ test-divisor 1)))))
-      
+
       (find-divisor n 2))
     (if (< n 2) #f (= n (smallest-divisor n)))) ; disclude <= 2
   (filtered-accumulate + 0 square a inc b prime?))
@@ -1261,7 +1261,7 @@ This is also trivial to implement but somehow difficult to wrap around.
 ; double returns a wrapped function such that f -> f(f) where f : val -> val
 (define (double f) (lambda (x) (f (f x))))
 (define (inc x) (+ x 1))
-(((double (double double)) inc) 5) 
+(((double (double double)) inc) 5)
 ; (((double (lambda (f) (double (double f)))) inc) 5) ; substitute the parent double
 ; (((lambda (f) (double (double (double (double f))))) inc) 5)
 ; ((double (double (double (double inc)))) 5)
@@ -1376,3 +1376,5 @@ It does not seem to work for degree 6 or higher. Maybe I'm doing something wrong
 
 (fixed-point cos 1.0) ; ==> .7390845495752126
 ```
+
+Note that, with `fixed-point`, computing for `(f x)` may need to be done *twice*: the first time to check if the value is good enough, and the second to improve the guess.
