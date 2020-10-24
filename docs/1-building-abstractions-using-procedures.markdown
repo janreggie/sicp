@@ -1336,3 +1336,43 @@ As always, an iterative solution can be found:
 ```
 
 It does not seem to work for degree 6 or higher. Maybe I'm doing something wrong here.
+
+### Exercise 1.46
+
+```scheme
+; iterative-improve returns a procedure which gets on improved upon while it is not yet good enough.
+; good-enough? returns true if the value is indeed good enough. (val ==> false)
+; improve improves upon the guess (val ==> val)
+(define (iterative-improve good-enough? improve)
+  (define (rinse-and-repeat x)
+    (if (good-enough? x)
+      x
+      (rinse-and-repeat (improve x))))
+  (lambda (x) (rinse-and-repeat x)))
+
+(define (sqrt x)
+  (define (square x) (* x x))
+  (define (average x y) (/ (+ x y) 2))
+  (define (print-approx x)
+    (newline)
+    (display "Checking ")
+    (display x))
+
+  (define (improve guess)
+    (average guess (/ x guess)))
+
+  (define (good-enough? guess)
+    (< (abs (- (square guess) x)) 0.001))
+
+  ; multiply by 1.0 to turn to floating-point
+  ((iterative-improve good-enough? improve) (* x 1.0)))
+
+(sqrt 103) ; ==> 10.14889156529969
+
+(define (fixed-point f first-guess)
+  (define (good-enough? x) (< (abs (- x (f x))) 0.000001))
+  (define (improve x) (f x))
+  ((iterative-improve good-enough? improve) first-guess))
+
+(fixed-point cos 1.0) ; ==> .7390845495752126
+```
