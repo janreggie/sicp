@@ -10,6 +10,7 @@ repo_url: https://github.com/janreggie/sicp
 nav:
   - 'index.markdown'
   - '1': '1-building-abstractions-using-procedures.markdown'
+  - '2': '2-building-abstractions-with-data.markdown'
 extra_css:
   - css/custom.css
 extra_javascript:
