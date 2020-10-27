@@ -95,6 +95,22 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-23" class="nav-link">Exercise 2.3</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-24" class="nav-link">Exercise 2.4</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-25" class="nav-link">Exercise 2.5</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-26" class="nav-link">Exercise 2.6</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
               </ul>
@@ -144,6 +160,138 @@
 (define ss (make-segment (make-point 1 2) (make-point 3 4)))
 (print-point (start-segment ss)) ; ==&gt; (1,2)
 (print-point (end-segment ss)) ; ==&gt; (3,4)
+</code></pre>
+
+<h3 id="exercise-23">Exercise 2.3<a class="headerlink" href="#exercise-23" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; make-rectangle creates a rectangle with c1, c2 as corners.
+; Note that c1 and c2 can be anywhere in the plane,
+; but the rectangle's segments will remain parallel to the x- and y-axes.
+; For instance, c1=(1,4), c2=(4,2) creates a 3x2 rectangle.
+(define (make-rectangle c1 c2) (cons c1 c2))
+
+; width returns the width of the rectangle
+(define (width r)
+  (abs (- (x-point (car r)) (x-point (cdr r)))))
+
+; height returns the height of the rectangle
+(define (height r)
+  (abs (- (y-point (car r)) (y-point (cdr r)))))
+
+; perimeter computes for the perimeter of the rectangle.
+; If the rectangle has zero width or height, it will return zero.
+(define (perimeter r)
+  (if (or (= (width r) 0) (= (height r) 0))
+    0
+    (* 2 (+ (width r) (height r)))))
+
+; area returns the area of the rectangle.
+(define (area r)
+  (* (width r) (height r)))
+</code></pre>
+
+<p>All these functions can be tested as follows:</p>
+<pre><code class="scheme">(define rect
+  (make-rectangle
+    (make-point 1 4)
+    (make-point 5 1)))
+(perimeter rect) ; ==&gt; 14
+(area rect) ; ==&gt; 12
+</code></pre>
+
+<h3 id="exercise-24">Exercise 2.4<a class="headerlink" href="#exercise-24" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (cons x y)
+  (lambda (m) (m x y)))
+</code></pre>
+
+<p>The procedure <code>cons</code> takes in two parameters <code>x</code> and <code>y</code> and returns a procedure that takes in a callable object <code>m</code> and returns the value <code>(m x y)</code>.</p>
+<pre><code class="scheme">(define (car z)
+  (z (lambda (p q) p)))
+</code></pre>
+
+<p>The procedure <code>car</code> takes in a callable object <code>z</code>, which in turn takes in a function that takes two callable values <code>p</code> and <code>q</code>, and then return <code>q</code>.</p>
+<p>This is actually a very clever way of "implementing" <code>cons</code> and <code>car</code>. The following is what goes on:</p>
+<pre><code class="scheme">(define pt (cons 2 3))  ; pt = (lambda (m) (m 2 3))
+(car pt)
+; (pt (lambda (p q) p))
+; ((lambda (m) (m 2 3)) (lambda (p q) p))
+; ((lambda (p q) p) 2 3)
+; 2
+</code></pre>
+
+<p>Now, let us try constructing a <code>cdr</code> using the example for <code>car</code>.</p>
+<pre><code class="scheme">(define (cdr z)
+  (z (lambda (p q) q)))
+(cdr pt)
+; (pt (lambda (p q) q))
+; ((lambda (m) (m 2 3)) (lambda (p q) q))
+; ((lambda (p q) q) 2 3)
+; 3
+</code></pre>
+
+<h3 id="exercise-25">Exercise 2.5<a class="headerlink" href="#exercise-25" title="Permanent link">&para;</a></h3>
+<p>This implementation requires repeatedly dividing the result by 2 or 3 to check how many 2's or 3's the value has.</p>
+<pre><code class="scheme">(define (cons x y)
+  (* (expt 2 x) (expt 3 y)))
+
+(define (car p)
+  (define (iter val res)
+    (if (= (remainder val 2) 0)
+      (iter (/ val 2) (+ res 1))
+      res))
+  (iter p 0))
+
+(define (cdr p)
+  (define (iter val res)
+    (if (= (remainder val 3) 0)
+      (iter (/ val 3) (+ res 1))
+      res))
+  (iter p 0))
+
+(define pt (cons 3 4))
+(car pt) ; ==&gt; 3
+(cdr pt) ; ==&gt; 4
+</code></pre>
+
+<h3 id="exercise-26">Exercise 2.6<a class="headerlink" href="#exercise-26" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define zero (lambda (f) (lambda (x) x)))
+</code></pre>
+
+<p>This defines <code>zero</code> as a function that takes in a function <code>f</code> and returns... a function that takes in <code>x</code> and returns the same <code>x</code>.</p>
+<pre><code class="scheme">(define (add-1 n)
+  (lambda (f) (lambda (x) (f ((n f) x)))))
+</code></pre>
+
+<p>This defines <code>add-1</code> as a procedure that takes in a callable value <code>n</code> and returns a function that takes in <code>f</code> that returns a function that takes in <code>x</code> and returns <code>(f ((n f) x))</code>. Now that <em>is</em> mind-boggling...</p>
+<p>Let us try solving for <code>(add-1 zero)</code>:</p>
+<pre><code class="scheme">(add-1 zero)
+; (add-1 (lambda (f) (lambda (x) x)))
+; (lambda (f) (lambda (x) (f (((lambda (f) (lambda (x) x)) f) x))))
+; (lambda (f) (lambda (x) (f ((lambda (x) x) x))))
+; (lambda (f) (lambda (x) (f x)))
+</code></pre>
+
+<p>Notice what happened here: <code>(add-1 zero)</code> takes in a function <code>f</code> and returns a function that takes in <code>x</code> and returns <code>(f x)</code>.</p>
+<p>Let us try to do that again.</p>
+<pre><code class="scheme">(add-1 (add-1 zero))
+; (add-1 (lambda (f) (lambda (x) (f x))))
+; (lambda (f) (lambda (x) (f (((lambda (f) (lambda (x) (f x))) f) x))))
+; (lambda (f) (lambda (x) (f ((lambda (x) (f x)) x))))
+; (lambda (f) (lambda (x) (f (f x))))
+</code></pre>
+
+<p>Another <code>add-1</code> adds a call to <code>f</code>.</p>
+<p>Since <code>(add-1 zero)</code> is just <code>one</code> and <code>(add-1 one)</code> is <code>two</code>, we can easily give direct definitions for them:</p>
+<pre><code class="scheme">(define one (lambda (f) (lambda (x) (f x))))
+(define two (lambda (f) (lambda (x) (f (f x)))))
+</code></pre>
+
+<p>We can also make a <code>+</code> procedure which takes in two "Church numerals" and return their sum. But how do we do this is another thing...</p>
+<p>Suppose <code>a</code> is a Church numeral that represents the number <code>A</code> in Church encoding, i.e., <code>(lambda (f) (lambda (x) (f (f ... (f x))))))</code> where <code>f</code> is callled <code>A</code> times. Similarly, let <code>b</code> be a Church numeral that represents <code>B</code> in Church encoding.</p>
+<p>Note <code>(a f)</code> and <code>(b f)</code> become <code>(lambda (x) (f (f ... (f x))))</code> where <code>f</code> is composed <code>A</code> and <code>B</code> times respectively. We would want to get a result such that the number of calls for <code>f</code> is <code>A+B</code>. Simple: <code>((a f) ((b f) x))</code>. <code>((b f) x)</code> returns <code>(f (f ... (f x)))</code> repeated <code>B</code> times, and that is wrapped around <code>(a f)</code> which calls <code>f</code> <code>A</code> times!</p>
+<pre><code class="scheme">(define (+ a b)
+  (lambda (f)
+    (lambda (x)
+      ((a f) ((b f) x)))))
 </code></pre></div>
             </div>
         </div>
