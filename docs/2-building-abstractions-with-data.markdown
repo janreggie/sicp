@@ -211,3 +211,127 @@ Note `(a f)` and `(b f)` become `(lambda (x) (f (f ... (f x))))` where `f` is co
     (lambda (x)
       ((a f) ((b f) x)))))
 ```
+
+### Exercise 2.7
+
+The implementation of `make-interval` does not mandate `a` be less than `b` or vice versa. A check might be needed.
+
+```scheme
+(define (lower-bound x) (min (car x) (cdr x)))
+(define (upper-bound x) (max (car x) (cdr x)))
+```
+
+### Exercise 2.8
+
+The difference between the two ranges is the range between the smallest possible difference to the largest possible one. The smallest possible difference can be taken by minimizing the first number and maximizing the second, while the largest possible one can be taken by maximizing the second number and minimizing the first.
+
+Suppose that the first range is 5 to 8 and the second 1 to 2. The smallest possible difference is $5-2=3$ while the largest one is $8-1=7$. Implementing it should be easy.
+
+```scheme
+; sub-interval determines the interval for the difference between x and y
+(define (sub-interval x y)
+  (make-interval
+    (- (lower-bound x) (upper-bound y))
+    (- (upper-bound x) (lower-bound y))))
+(define a (make-interval 5 8))
+(define b (make-interval 1 2))
+(sub-interval a b) ; 3 - 7
+```
+
+### Exercise 2.9
+
+Suppose $x=\left[a,b\right]$ and $y=\left[c,d\right]$, and $W\left(x\right)$ be the width function for $x$. Hence, $W\left(x\right)=\frac{b-a}{2}$ and $W\left(y\right)=\frac{d-c}{2}$.
+
+We see that $x+y=[a+c,b+d]$ and $x-y=[a-d,b-c]$. Astonishingly, $W\left(x+y\right)=W\left(x-y\right)=\frac{\left(b+d\right)-\left(a+c\right)}{2}$, which subsequently equals $W\left(x\right)+W\left(y\right)$.
+
+For multiplication, $x\times y = \left[\max\left(ac,ad,bc,bd\right), \min\left(ac,ad,bc,bd\right)\right]$, and so $W\left(x\times y\right)$ can become uncertain, hence there is no direct relationship between that and either of $W\left(x\right)$ and $W\left(y\right)$. This goes the same with division, which is dependent on multiplication.
+
+### Exercise 2.10
+
+```scheme
+(define (div-interval x y)
+  ; spans-zero returns true if x spans zero by checking its signs
+  (define (spans-zero x)
+    (< (* (lower-bound x) (upper-bound x)) 0))
+  (if (spans-zero y)
+    (error "Dividend spans zero")
+    (mul-interval x
+      (make-interval
+        (/ 1.0 (upper-bound y))
+        (/ 1.0 (lower-bound y))))))
+(div-interval
+  (make-interval 1 5)
+  (make-interval 2 3)) ; returns something alright
+(div-interval
+  (make-interval 1 5)
+  (make-interval -2 3)) ; returns an error
+```
+
+### Exercise 2.11
+
+Suppose $S\left(x\right)$ has the following property:
+
+$$
+S\left(\left[a,b\right]\right) = \left\{\begin{array}{lr}
+    -1 & \text{if } a \lt 0 \text{ and } b \lt 0\\
+    0  & \text{if } a \lt 0 \text{ and } b \ge 0\\
+    1  & \text{if } a \ge 0 \text{ and } b \ge 0
+    \end{array}\right.
+$$
+
+With $x=\left[a,b\right]$ and $y=\left[c,d\right]$, there are nine possible combinations for $x\times y$ determined by their $S$-values:
+
+$$
+% painstakingly transcribed using https://isaurssaurav.github.io/mathjax-table-generator/
+\begin{array} {|r|r|}\hline _{S(x)} \backslash ^{S(y)} & -1 & 0 & 1 \\ \hline -1 & \left[bd,ac\right] & \left[ad,ac\right] & \left[ad,bc\right] \\ \hline 0 & \left[bc,ac\right] & \star & \left[ad,bd\right] \\ \hline 1 & \left[bc,ad\right] & \left[bc,bd\right] & \left[ac,bd\right] \\ \hline  \end{array}
+$$
+
+These ranges have been computed by hand. Consider when $S\left(x\right)=1$ and $S\left(y\right)=0$. In this case, the smallest possible number could be taken from $b$, the larger positive number in the range $x$, multiplied to $c$, the smallest negative number in $y$. Similarly, the largest possible number in the product could be taken from $b$ multiplied to $d$, the largest positive number in $y$. (Try using the example $x=\left[1,4\right]$ and $y=\left[-2,3\right]$.)
+
+The middle case, when both $x$ and $y$ span zero, is a bit stranger. The negative extrema $bc$ and $ad$, and the positive extrema $ac$ and $bd$, can be smaller or larger than the other. One has to perform the multiplication operations manually and check the largest value from there.
+
+The following is an implementation:
+
+```scheme
+; mul-interval is an implementation of multiplying two intervals
+; which uses two multiplication operations most of the time
+(define (mul-interval x y)
+  ; neg be less than zero and nonneg be its complement
+  (define (neg n) (< n 0))
+  (define (nonneg n) (>= n 0))
+
+  ; s be the s-value of a range
+  (define (s x)
+    (cond
+      ((and (neg (lower-bound x)) (neg (upper-bound x))) -1)
+      ((and (neg (lower-bound x)) (nonneg (upper-bound x))) 0)
+      (else 1)))
+
+  ; now for the great conditional
+  (let ((a (lower-bound x))
+      (b (upper-bound x))
+      (c (lower-bound y))
+      (d (upper-bound y))
+      (sx (s x))
+      (sy (s y)))
+    (cond
+      ((and (= sx -1) (= sy -1)) (make-interval (* b d) (* a c)))
+      ((and (= sx -1) (= sy 0))  (make-interval (* a d) (* a c)))
+      ((and (= sx -1) (= sy 1))  (make-interval (* a d) (* b c)))
+      ((and (= sx 0)  (= sy -1)) (make-interval (* b c) (* a c)))
+      ; skipping sx=0 and sy=0 and putting that as the else statement
+      ((and (= sx 0)  (= sy 1))  (make-interval (* a d) (* b d)))
+      ((and (= sx 1)  (= sy -1)) (make-interval (* b c) (* a d)))
+      ((and (= sx 1)  (= sy 0))  (make-interval (* b c) (* b d)))
+      ((and (= sx 1)  (= sy 1))  (make-interval (* a c) (* b d)))
+      (else
+        (let ((ac (* a c))
+            (ad (* a d))
+            (bc (* b c))
+            (bd (* b d)))
+          (make-interval (min ad bc) (max ac bd)))))))
+```
+
+Tests can be done by writing two intervals, multiplying them using this and the original implementation, and checking if they are equal.
+
+How much readability one is willing to trade off for performance is dependent on the one who writes the code.
