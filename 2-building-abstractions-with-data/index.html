@@ -111,6 +111,26 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-27" class="nav-link">Exercise 2.7</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-28" class="nav-link">Exercise 2.8</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-29" class="nav-link">Exercise 2.9</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-210" class="nav-link">Exercise 2.10</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-211" class="nav-link">Exercise 2.11</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
               </ul>
@@ -292,7 +312,108 @@
   (lambda (f)
     (lambda (x)
       ((a f) ((b f) x)))))
-</code></pre></div>
+</code></pre>
+
+<h3 id="exercise-27">Exercise 2.7<a class="headerlink" href="#exercise-27" title="Permanent link">&para;</a></h3>
+<p>The implementation of <code>make-interval</code> does not mandate <code>a</code> be less than <code>b</code> or vice versa. A check might be needed.</p>
+<pre><code class="scheme">(define (lower-bound x) (min (car x) (cdr x)))
+(define (upper-bound x) (max (car x) (cdr x)))
+</code></pre>
+
+<h3 id="exercise-28">Exercise 2.8<a class="headerlink" href="#exercise-28" title="Permanent link">&para;</a></h3>
+<p>The difference between the two ranges is the range between the smallest possible difference to the largest possible one. The smallest possible difference can be taken by minimizing the first number and maximizing the second, while the largest possible one can be taken by maximizing the second number and minimizing the first.</p>
+<p>Suppose that the first range is 5 to 8 and the second 1 to 2. The smallest possible difference is <span class="arithmatex">\(5-2=3\)</span> while the largest one is <span class="arithmatex">\(8-1=7\)</span>. Implementing it should be easy.</p>
+<pre><code class="scheme">; sub-interval determines the interval for the difference between x and y
+(define (sub-interval x y)
+  (make-interval
+    (- (lower-bound x) (upper-bound y))
+    (- (upper-bound x) (lower-bound y))))
+(define a (make-interval 5 8))
+(define b (make-interval 1 2))
+(sub-interval a b) ; 3 - 7
+</code></pre>
+
+<h3 id="exercise-29">Exercise 2.9<a class="headerlink" href="#exercise-29" title="Permanent link">&para;</a></h3>
+<p>Suppose <span class="arithmatex">\(x=\left[a,b\right]\)</span> and <span class="arithmatex">\(y=\left[c,d\right]\)</span>, and <span class="arithmatex">\(W\left(x\right)\)</span> be the width function for <span class="arithmatex">\(x\)</span>. Hence, <span class="arithmatex">\(W\left(x\right)=\frac{b-a}{2}\)</span> and <span class="arithmatex">\(W\left(y\right)=\frac{d-c}{2}\)</span>.</p>
+<p>We see that <span class="arithmatex">\(x+y=[a+c,b+d]\)</span> and <span class="arithmatex">\(x-y=[a-d,b-c]\)</span>. Astonishingly, <span class="arithmatex">\(W\left(x+y\right)=W\left(x-y\right)=\frac{\left(b+d\right)-\left(a+c\right)}{2}\)</span>, which subsequently equals <span class="arithmatex">\(W\left(x\right)+W\left(y\right)\)</span>.</p>
+<p>For multiplication, <span class="arithmatex">\(x\times y = \left[\max\left(ac,ad,bc,bd\right), \min\left(ac,ad,bc,bd\right)\right]\)</span>, and so <span class="arithmatex">\(W\left(x\times y\right)\)</span> can become uncertain, hence there is no direct relationship between that and either of <span class="arithmatex">\(W\left(x\right)\)</span> and <span class="arithmatex">\(W\left(y\right)\)</span>. This goes the same with division, which is dependent on multiplication.</p>
+<h3 id="exercise-210">Exercise 2.10<a class="headerlink" href="#exercise-210" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (div-interval x y)
+  ; spans-zero returns true if x spans zero by checking its signs
+  (define (spans-zero x)
+    (&lt; (* (lower-bound x) (upper-bound x)) 0))
+  (if (spans-zero y)
+    (error &quot;Dividend spans zero&quot;)
+    (mul-interval x
+      (make-interval
+        (/ 1.0 (upper-bound y))
+        (/ 1.0 (lower-bound y))))))
+(div-interval
+  (make-interval 1 5)
+  (make-interval 2 3)) ; returns something alright
+(div-interval
+  (make-interval 1 5)
+  (make-interval -2 3)) ; returns an error
+</code></pre>
+
+<h3 id="exercise-211">Exercise 2.11<a class="headerlink" href="#exercise-211" title="Permanent link">&para;</a></h3>
+<p>Suppose <span class="arithmatex">\(S\left(x\right)\)</span> has the following property:</p>
+<div class="arithmatex">\[
+S\left(\left[a,b\right]\right) = \left\{\begin{array}{lr}
+    -1 &amp; \text{if } a \lt 0 \text{ and } b \lt 0\\
+    0  &amp; \text{if } a \lt 0 \text{ and } b \ge 0\\
+    1  &amp; \text{if } a \ge 0 \text{ and } b \ge 0
+    \end{array}\right.
+\]</div>
+<p>With <span class="arithmatex">\(x=\left[a,b\right]\)</span> and <span class="arithmatex">\(y=\left[c,d\right]\)</span>, there are nine possible combinations for <span class="arithmatex">\(x\times y\)</span> determined by their <span class="arithmatex">\(S\)</span>-values:</p>
+<div class="arithmatex">\[
+% painstakingly transcribed using https://isaurssaurav.github.io/mathjax-table-generator/
+\begin{array} {|r|r|}\hline _{S(x)} \backslash ^{S(y)} &amp; -1 &amp; 0 &amp; 1 \\ \hline -1 &amp; \left[bd,ac\right] &amp; \left[ad,ac\right] &amp; \left[ad,bc\right] \\ \hline 0 &amp; \left[bc,ac\right] &amp; \star &amp; \left[ad,bd\right] \\ \hline 1 &amp; \left[bc,ad\right] &amp; \left[bc,bd\right] &amp; \left[ac,bd\right] \\ \hline  \end{array}
+\]</div>
+<p>These ranges have been computed by hand. Consider when <span class="arithmatex">\(S\left(x\right)=1\)</span> and <span class="arithmatex">\(S\left(y\right)=0\)</span>. In this case, the smallest possible number could be taken from <span class="arithmatex">\(b\)</span>, the larger positive number in the range <span class="arithmatex">\(x\)</span>, multiplied to <span class="arithmatex">\(c\)</span>, the smallest negative number in <span class="arithmatex">\(y\)</span>. Similarly, the largest possible number in the product could be taken from <span class="arithmatex">\(b\)</span> multiplied to <span class="arithmatex">\(d\)</span>, the largest positive number in <span class="arithmatex">\(y\)</span>. (Try using the example <span class="arithmatex">\(x=\left[1,4\right]\)</span> and <span class="arithmatex">\(y=\left[-2,3\right]\)</span>.)</p>
+<p>The middle case, when both <span class="arithmatex">\(x\)</span> and <span class="arithmatex">\(y\)</span> span zero, is a bit stranger. The negative extrema <span class="arithmatex">\(bc\)</span> and <span class="arithmatex">\(ad\)</span>, and the positive extrema <span class="arithmatex">\(ac\)</span> and <span class="arithmatex">\(bd\)</span>, can be smaller or larger than the other. One has to perform the multiplication operations manually and check the largest value from there.</p>
+<p>The following is an implementation:</p>
+<pre><code class="scheme">; mul-interval is an implementation of multiplying two intervals
+; which uses two multiplication operations most of the time
+(define (mul-interval x y)
+  ; neg be less than zero and nonneg be its complement
+  (define (neg n) (&lt; n 0))
+  (define (nonneg n) (&gt;= n 0))
+
+  ; s be the s-value of a range
+  (define (s x)
+    (cond
+      ((and (neg (lower-bound x)) (neg (upper-bound x))) -1)
+      ((and (neg (lower-bound x)) (nonneg (upper-bound x))) 0)
+      (else 1)))
+
+  ; now for the great conditional
+  (let ((a (lower-bound x))
+      (b (upper-bound x))
+      (c (lower-bound y))
+      (d (upper-bound y))
+      (sx (s x))
+      (sy (s y)))
+    (cond
+      ((and (= sx -1) (= sy -1)) (make-interval (* b d) (* a c)))
+      ((and (= sx -1) (= sy 0))  (make-interval (* a d) (* a c)))
+      ((and (= sx -1) (= sy 1))  (make-interval (* a d) (* b c)))
+      ((and (= sx 0)  (= sy -1)) (make-interval (* b c) (* a c)))
+      ; skipping sx=0 and sy=0 and putting that as the else statement
+      ((and (= sx 0)  (= sy 1))  (make-interval (* a d) (* b d)))
+      ((and (= sx 1)  (= sy -1)) (make-interval (* b c) (* a d)))
+      ((and (= sx 1)  (= sy 0))  (make-interval (* b c) (* b d)))
+      ((and (= sx 1)  (= sy 1))  (make-interval (* a c) (* b d)))
+      (else
+        (let ((ac (* a c))
+            (ad (* a d))
+            (bc (* b c))
+            (bd (* b d)))
+          (make-interval (min ad bc) (max ac bd)))))))
+</code></pre>
+
+<p>Tests can be done by writing two intervals, multiplying them using this and the original implementation, and checking if they are equal.</p>
+<p>How much readability one is willing to trade off for performance is dependent on the one who writes the code.</p></div>
             </div>
         </div>
 
