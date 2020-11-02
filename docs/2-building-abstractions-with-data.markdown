@@ -335,3 +335,97 @@ The following is an implementation:
 Tests can be done by writing two intervals, multiplying them using this and the original implementation, and checking if they are equal.
 
 How much readability one is willing to trade off for performance is dependent on the one who writes the code.
+
+### Exercise 2.12
+
+With some center $c$ and a percent tolerance $p<1$, the range should be $\left[c\left(1-p\right), c\left(1+p\right)\right]$.
+
+```scheme
+; make-center-percent makes an interval with center c and percent tolerance p.
+; For example, if c=6.8 and p=10, the interval is between 6.8-(6.8*10%) and 6.8+(6.8*10%),
+; which is 6.12 and 7.48.
+(define (make-center-percent c p)
+  (make-interval
+    (* c (- 1.0 (/ p 100.0)))
+    (* c (+ 1.0 (/ p 100.0)))))
+(make-center-percent 6.8 10) ; 6.12 - 7.48
+```
+
+### Exercise 2.13
+
+Suppose there are two ranges: the first one having a center of $c_1$ and percentage tolerance $p_1$, and the second having $c_2$ and $p_2$. Henceforth, the two ranges are $\left[{c_1}\left(1-{p_1}\right), {c_1}\left(1+{p_1}\right)\right]$ and $\left[{c_2}\left(1-{p_2}\right), {c_2}\left(1+{p_2}\right)\right]$.
+
+With the assumption that all numbers are positive, the product should have the range $\left[{c_1}{c_2}\left(1-{p_1}\right)\left(1-{p_2}\right), {c_1}{c_2}\left(1+{p_1}\right)\left(1+{p_2}\right)\right]$, which can be written as $\left[{c_1}{c_2}\left(1-\left({p_1}+{p_2}\right)+{p_1}{p_2}\right), {c_1}{c_2}\left(1+\left({p_1}+{p_2}\right)+{p_1}{p_2}\right)\right]$.
+
+If $p_1$ and $p_2$ are *sufficiently* small, ${p_1}{p_2}$ can be negligible, and the range is written as $\left[{c_1}{c_2}\left(1-\left({p_1}+{p_2}\right)\right), {c_1}{c_2}\left(1+\left({p_1}+{p_2}\right)\right)\right]$, which is a range with center ${c_1}{c_2}$ and percentage tolerance ${p_1}+{p_2}$.
+
+### Exercise 2.14
+
+Using a simple test, we see that the two procedures do output different values:
+
+```scheme
+(define r1 (make-center-percent 6800 10))
+(define r2 (make-center-percent 3000 25))
+(par1 r1 r2) ; (1226.179875333927 . 3351.2544802867387)
+(par2 r1 r2) ; (1645.1612903225807 . 2497.773820124666)
+```
+
+Suppose $x=\left[a,b\right]$ and $y=\left[c,d\right]$. We see that $x+y=\left[a+c,b+d\right]$ and $x\times y=\left[ac, bd\right]$. Let us consider, however, what `div-interval` does:
+
+```scheme
+(define (div-interval x y)
+  (mul-interval x
+    (make-interval
+      (/ 1.0 (upper-bound y))
+      (/ 1.0 (lower-bound y)))))
+```
+
+Or, in mathematical terms:
+
+$$
+\begin{aligned}
+\left[a,b\right]\div\left[c,d\right] &= \left[a,b\right]\times \left[\frac{1}{d}, \frac{1}{c}\right] \\
+  &= \left[\frac{a}{d}, \frac{b}{c}\right]
+\end{aligned}
+$$
+
+Interestingly, if we have a range $[a,b]$ divided by itself:
+
+$$
+\begin{aligned}
+\left[a,b\right]\div\left[a,b\right] &= \left[\frac{a}{b}, \frac{b}{a}\right]
+\end{aligned}
+$$
+
+The current system does not have an identity principle. More on this later.
+
+From here, we can analyze the behaviors of `par1` and `par2`:
+
+$$
+\begin{aligned}
+\text{par1}\left(x,y\right) &= \left(x\times y\right) \div \left(x+y\right) \\
+  &= \left[ac, bd\right] \div \left[a+c, b+d\right] \\
+  &= \left[\frac{ac}{b+d}, \frac{bd}{a+c}\right]
+\end{aligned}
+$$
+
+$$
+\begin{aligned}
+\text{par2}\left(x,y\right) &= \left[1, 1\right] \div \left(\left(\left[1,1\right] \div x\right) + \left(\left[1,1\right] \div y\right)\right) \\
+  &= \left[1,1\right] \div \left(\left(\left[1,1\right] \div \left[a,b\right]\right) + \left(\left[1,1\right] \div \left[c,d\right]\right)\right) \\
+  &= \left[1,1\right] \div \left(\left[\frac{1}{b}, \frac{1}{a}\right] + \left[\frac{1}{d}, \frac{1}{c}\right]\right) \\
+  &= \left[1,1\right] \div \left(\left[\frac{1}{b} + \frac{1}{d}, \frac{1}{a} + \frac{1}{c}\right]\right) \\
+  &= \left[\frac{1}{\frac{1}{a} + \frac{1}{c}} , \frac{1}{\frac{1}{b} + \frac{1}{d}} \right] \\
+  &= \left[\frac{ac}{a+c} , \frac{bd}{b+d} \right]
+\end{aligned}
+$$
+
+### Exercise 2.15
+
+Let us consider the results of the previous exercise. We have to remember that $a<b$ and $c<d$. Therefore, $a+c < b+d$, and this implies that $\left[\frac{ac}{b+d}, \frac{bd}{a+c}\right]$ has a *wider* range than $\left[\frac{ac}{a+c} , \frac{bd}{b+d} \right]$ because of the denominators of the parameters of the former.
+
+While it may be computationally cheaper to compute for ${x}\times{y}$ in `par1`, this will introduce a much larger range than `par2`. This is perhaps the "uncertainty" that Eva Lu Ator is describing.
+
+### Exercise 2.16
+
+Consider the lack of identity in `div-interval`. Because of this, $x + y \div y \neq x$. The two expressions should be equivalent, but they aren't. A principle of "identity" should be established where a program knows if an operation is applied to two "same" intervals, although doing so is a lot harder than it looks, and I can't say if it even were possible.
