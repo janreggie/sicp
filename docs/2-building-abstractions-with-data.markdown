@@ -429,3 +429,183 @@ While it may be computationally cheaper to compute for ${x}\times{y}$ in `par1`,
 ### Exercise 2.16
 
 Consider the lack of identity in `div-interval`. Because of this, $x + y \div y \neq x$. The two expressions should be equivalent, but they aren't. A principle of "identity" should be established where a program knows if an operation is applied to two "same" intervals, although doing so is a lot harder than it looks, and I can't say if it even were possible.
+
+## 2.2 Hierarchial Data and the Closure Property
+
+### Exercise 2.17
+
+```scheme
+; last-pair returns a pair which only contains the last element of a given list
+(define (last-pair items)
+  (if (null? (cdr items))
+    items
+    (last-pair (cdr items))))
+(last-pair (list 23 72 149 34)) ; (34)
+```
+
+### Exercise 2.18
+
+Note that `(cdr items)` returns either a list or nil, and `(car items)` returns a single number. From here, how are we able to reverse a list? Of course, without using the built-in `reverse`.
+
+Remember that `last-pair` takes in the last "pair" of the list (its `cdr` is an empty value, so really it's a pair with only one element). This can be a very useful procedure.
+
+A `reverse` procedure would use `last-pair` to get the very last item, and a `all-but-last` procedure which returns the entire list without the very last element.
+
+```scheme
+(define (all-but-last items)
+  (if (null? (cdr items))
+    ()
+    (cons (car items) (all-but-last (cdr items)))))
+(all-but-last (list 23 72 149 34)) ; (23 72 149)
+
+(define (reverse items)
+  (if (null? items)
+    items
+    (cons (car (last-pair items)) (reverse (all-but-last items)))))
+(reverse (list 23 72 149 34)) ; (34 149 72 23)
+```
+
+### Exercise 2.19
+
+```scheme
+; first-denomination returns the first item on items
+(define (first-denomination items)
+  (car items))
+
+; except-first-denomination returns items but the first one
+(define (except-first-denomination items)
+  (cdr items))
+
+; no-more? checks if items is empty
+(define (no-more? items)
+  (null? items))
+
+; using the previous procedures, as well as those in the book
+(cc 100 us-coins) ; 292
+```
+
+On whether order matters for `coin-values`, after every iteration, `cc` branches between when `first-denomination` has been chosen, and when it isn't and `first-denomination` is no longer available as an option. The order of the coins should not matter, since all permutations will be attempted.
+
+A simple demonstration of this, although definitely not solid proof, can be seen if `us-coins` were reversed:
+
+```scheme
+(cc 100 (reverse us-coins)) ; also 292
+```
+
+### Exercise 2.20
+
+```scheme
+(define (same-parity . items)
+  (define (is-same-parity? x) (= (remainder (car items) 2) (remainder x 2)))
+  (filter is-same-parity? items))
+(same-parity 1 2 3 4 5 6 7) ; (1 3 5 7)
+(same-parity 2 3 4 5 6 7) ; (2 4 6)
+```
+
+Wait, we aren't allowed to use `filter` yet? Okay then.
+
+```scheme
+(define (same-parity . items)
+  (define (is-same-parity? x) (= (remainder (car items) 2) (remainder x 2)))
+
+  ; recurse recurses through items with is-same-parity? and returns accum
+  (define (recurse items accum)
+    (cond
+      ((null? items) accum)
+      ((is-same-parity? (car items)) (recurse (cdr items) (cons (car items) accum)))
+      (else (recurse (cdr items) accum))))
+
+  ; one call to reverse since accum appends to the left every time
+  (reverse (recurse items ())))
+(same-parity 1 2 3 4 5 6 7) ; (1 3 5 7)
+(same-parity 2 3 4 5 6 7) ; (2 4 6)
+```
+
+### Exercise 2.21
+
+```scheme
+(define (square-list items)
+  (if (null? items)
+    () ; "nil"
+    (cons (square (car items)) (square-list (cdr items)))))
+(square-list (list 1 2 3 4))
+
+(define (square-list items)
+  (map square items))
+(square-list (list 1 2 3 4))
+```
+
+### Exercise 2.22
+
+```scheme
+(define (square-list items)
+  (define (iter things answer)
+    (if (null? things)
+      answer
+      (iter (cdr things)
+        (cons (square (car things))
+          answer))))
+  (iter items ()))
+(square-list (list 1 2 3 4))
+; (iter (list 1 2 3 4) ())
+; (iter (list 2 3 4) (cons (square 1) ()))
+; (iter (list 2 3 4) (list 1))
+; (iter (list 3 4) (cons (square 2) (list 1)))
+; (iter (list 3 4) (list 4 1))
+; (iter (list 4) (cons (square 3) (list 4 1)))
+; (iter (list 4) (list 9 4 1))
+; (iter () (cons (square 4) (list 9 4 1)))
+; (iter () (list 16 9 4 1))
+; (list 16 9 4 1)
+```
+
+For every subsequent value taken from `things`, it is appended at the start of `answer`. The answers are stacked FILO.
+
+```scheme
+(define (square-list items)
+  (define (iter things answer)
+    (if (null? things)
+      answer
+      (iter (cdr things)
+        (cons answer
+          (square (car things))))))
+  (iter items ()))
+(square-list (list 1 2 3 4))
+; (iter (list 1 2 3 4) ())
+; (iter (list 2 3 4) (cons () (square 1)))
+; (iter (list 2 3 4) (list () 1))
+; (iter (list 3 4) (cons (list () 1) (square 2)))
+; (iter (list 3 4) (list (list () 1) 4))
+; (iter (list 4) (cons (list (list () 1) 4) (square 3)))
+; (iter (list 4) (list (list (list () 1) 4) 9))
+; (iter () (cons (list (list (list () 1) 4) 9) (square 4)))
+; (iter () (list (list (list (list () 1) 4) 9) 16))
+; (list (list (list (list () 1) 4) 9) 16)
+```
+
+The problem here is that a list is `cons`'d to a value, which should be the other way around. The final pair has a *list* in its first half, and a single *value* at its second. This will yield MIT Scheme to display something weird:
+
+```text
+1 ]=> (square-list (list 1 2 3 4))
+;Value: ((((() . 1) . 4) . 9) . 16)
+```
+
+### Exercise 2.23
+
+```scheme
+(define (for-each f items)
+  (define (execute-and-iterate f items)
+    (f (car items))
+    (for-each f (cdr items)))
+
+  (if (not (null? items))
+    (execute-and-iterate f items)))
+
+(for-each
+  (lambda (x) (newline) (display x))
+  (list 57 321 88))
+; 57
+; 321
+; 88
+; returns unspecified value
+```
