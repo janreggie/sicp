@@ -131,6 +131,58 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-212" class="nav-link">Exercise 2.12</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-213" class="nav-link">Exercise 2.13</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-214" class="nav-link">Exercise 2.14</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-215" class="nav-link">Exercise 2.15</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-216" class="nav-link">Exercise 2.16</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#22-hierarchial-data-and-the-closure-property" class="nav-link">2.2 Hierarchial Data and the Closure Property</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="3"><a href="#exercise-217" class="nav-link">Exercise 2.17</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-218" class="nav-link">Exercise 2.18</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-219" class="nav-link">Exercise 2.19</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-220" class="nav-link">Exercise 2.20</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-221" class="nav-link">Exercise 2.21</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-222" class="nav-link">Exercise 2.22</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-223" class="nav-link">Exercise 2.23</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
               </ul>
@@ -413,7 +465,228 @@ S\left(\left[a,b\right]\right) = \left\{\begin{array}{lr}
 </code></pre>
 
 <p>Tests can be done by writing two intervals, multiplying them using this and the original implementation, and checking if they are equal.</p>
-<p>How much readability one is willing to trade off for performance is dependent on the one who writes the code.</p></div>
+<p>How much readability one is willing to trade off for performance is dependent on the one who writes the code.</p>
+<h3 id="exercise-212">Exercise 2.12<a class="headerlink" href="#exercise-212" title="Permanent link">&para;</a></h3>
+<p>With some center <span class="arithmatex">\(c\)</span> and a percent tolerance <span class="arithmatex">\(p&lt;1\)</span>, the range should be <span class="arithmatex">\(\left[c\left(1-p\right), c\left(1+p\right)\right]\)</span>.</p>
+<pre><code class="scheme">; make-center-percent makes an interval with center c and percent tolerance p.
+; For example, if c=6.8 and p=10, the interval is between 6.8-(6.8*10%) and 6.8+(6.8*10%),
+; which is 6.12 and 7.48.
+(define (make-center-percent c p)
+  (make-interval
+    (* c (- 1.0 (/ p 100.0)))
+    (* c (+ 1.0 (/ p 100.0)))))
+(make-center-percent 6.8 10) ; 6.12 - 7.48
+</code></pre>
+
+<h3 id="exercise-213">Exercise 2.13<a class="headerlink" href="#exercise-213" title="Permanent link">&para;</a></h3>
+<p>Suppose there are two ranges: the first one having a center of <span class="arithmatex">\(c_1\)</span> and percentage tolerance <span class="arithmatex">\(p_1\)</span>, and the second having <span class="arithmatex">\(c_2\)</span> and <span class="arithmatex">\(p_2\)</span>. Henceforth, the two ranges are <span class="arithmatex">\(\left[{c_1}\left(1-{p_1}\right), {c_1}\left(1+{p_1}\right)\right]\)</span> and <span class="arithmatex">\(\left[{c_2}\left(1-{p_2}\right), {c_2}\left(1+{p_2}\right)\right]\)</span>.</p>
+<p>With the assumption that all numbers are positive, the product should have the range <span class="arithmatex">\(\left[{c_1}{c_2}\left(1-{p_1}\right)\left(1-{p_2}\right), {c_1}{c_2}\left(1+{p_1}\right)\left(1+{p_2}\right)\right]\)</span>, which can be written as <span class="arithmatex">\(\left[{c_1}{c_2}\left(1-\left({p_1}+{p_2}\right)+{p_1}{p_2}\right), {c_1}{c_2}\left(1+\left({p_1}+{p_2}\right)+{p_1}{p_2}\right)\right]\)</span>.</p>
+<p>If <span class="arithmatex">\(p_1\)</span> and <span class="arithmatex">\(p_2\)</span> are <em>sufficiently</em> small, <span class="arithmatex">\({p_1}{p_2}\)</span> can be negligible, and the range is written as <span class="arithmatex">\(\left[{c_1}{c_2}\left(1-\left({p_1}+{p_2}\right)\right), {c_1}{c_2}\left(1+\left({p_1}+{p_2}\right)\right)\right]\)</span>, which is a range with center <span class="arithmatex">\({c_1}{c_2}\)</span> and percentage tolerance <span class="arithmatex">\({p_1}+{p_2}\)</span>.</p>
+<h3 id="exercise-214">Exercise 2.14<a class="headerlink" href="#exercise-214" title="Permanent link">&para;</a></h3>
+<p>Using a simple test, we see that the two procedures do output different values:</p>
+<pre><code class="scheme">(define r1 (make-center-percent 6800 10))
+(define r2 (make-center-percent 3000 25))
+(par1 r1 r2) ; (1226.179875333927 . 3351.2544802867387)
+(par2 r1 r2) ; (1645.1612903225807 . 2497.773820124666)
+</code></pre>
+
+<p>Suppose <span class="arithmatex">\(x=\left[a,b\right]\)</span> and <span class="arithmatex">\(y=\left[c,d\right]\)</span>. We see that <span class="arithmatex">\(x+y=\left[a+c,b+d\right]\)</span> and <span class="arithmatex">\(x\times y=\left[ac, bd\right]\)</span>. Let us consider, however, what <code>div-interval</code> does:</p>
+<pre><code class="scheme">(define (div-interval x y)
+  (mul-interval x
+    (make-interval
+      (/ 1.0 (upper-bound y))
+      (/ 1.0 (lower-bound y)))))
+</code></pre>
+
+<p>Or, in mathematical terms:</p>
+<div class="arithmatex">\[
+\begin{aligned}
+\left[a,b\right]\div\left[c,d\right] &amp;= \left[a,b\right]\times \left[\frac{1}{d}, \frac{1}{c}\right] \\
+  &amp;= \left[\frac{a}{d}, \frac{b}{c}\right]
+\end{aligned}
+\]</div>
+<p>Interestingly, if we have a range <span class="arithmatex">\([a,b]\)</span> divided by itself:</p>
+<div class="arithmatex">\[
+\begin{aligned}
+\left[a,b\right]\div\left[a,b\right] &amp;= \left[\frac{a}{b}, \frac{b}{a}\right]
+\end{aligned}
+\]</div>
+<p>The current system does not have an identity principle. More on this later.</p>
+<p>From here, we can analyze the behaviors of <code>par1</code> and <code>par2</code>:</p>
+<div class="arithmatex">\[
+\begin{aligned}
+\text{par1}\left(x,y\right) &amp;= \left(x\times y\right) \div \left(x+y\right) \\
+  &amp;= \left[ac, bd\right] \div \left[a+c, b+d\right] \\
+  &amp;= \left[\frac{ac}{b+d}, \frac{bd}{a+c}\right]
+\end{aligned}
+\]</div>
+<div class="arithmatex">\[
+\begin{aligned}
+\text{par2}\left(x,y\right) &amp;= \left[1, 1\right] \div \left(\left(\left[1,1\right] \div x\right) + \left(\left[1,1\right] \div y\right)\right) \\
+  &amp;= \left[1,1\right] \div \left(\left(\left[1,1\right] \div \left[a,b\right]\right) + \left(\left[1,1\right] \div \left[c,d\right]\right)\right) \\
+  &amp;= \left[1,1\right] \div \left(\left[\frac{1}{b}, \frac{1}{a}\right] + \left[\frac{1}{d}, \frac{1}{c}\right]\right) \\
+  &amp;= \left[1,1\right] \div \left(\left[\frac{1}{b} + \frac{1}{d}, \frac{1}{a} + \frac{1}{c}\right]\right) \\
+  &amp;= \left[\frac{1}{\frac{1}{a} + \frac{1}{c}} , \frac{1}{\frac{1}{b} + \frac{1}{d}} \right] \\
+  &amp;= \left[\frac{ac}{a+c} , \frac{bd}{b+d} \right]
+\end{aligned}
+\]</div>
+<h3 id="exercise-215">Exercise 2.15<a class="headerlink" href="#exercise-215" title="Permanent link">&para;</a></h3>
+<p>Let us consider the results of the previous exercise. We have to remember that <span class="arithmatex">\(a&lt;b\)</span> and <span class="arithmatex">\(c&lt;d\)</span>. Therefore, <span class="arithmatex">\(a+c &lt; b+d\)</span>, and this implies that <span class="arithmatex">\(\left[\frac{ac}{b+d}, \frac{bd}{a+c}\right]\)</span> has a <em>wider</em> range than <span class="arithmatex">\(\left[\frac{ac}{a+c} , \frac{bd}{b+d} \right]\)</span> because of the denominators of the parameters of the former.</p>
+<p>While it may be computationally cheaper to compute for <span class="arithmatex">\({x}\times{y}\)</span> in <code>par1</code>, this will introduce a much larger range than <code>par2</code>. This is perhaps the "uncertainty" that Eva Lu Ator is describing.</p>
+<h3 id="exercise-216">Exercise 2.16<a class="headerlink" href="#exercise-216" title="Permanent link">&para;</a></h3>
+<p>Consider the lack of identity in <code>div-interval</code>. Because of this, <span class="arithmatex">\(x + y \div y \neq x\)</span>. The two expressions should be equivalent, but they aren't. A principle of "identity" should be established where a program knows if an operation is applied to two "same" intervals, although doing so is a lot harder than it looks, and I can't say if it even were possible.</p>
+<h2 id="22-hierarchial-data-and-the-closure-property">2.2 Hierarchial Data and the Closure Property<a class="headerlink" href="#22-hierarchial-data-and-the-closure-property" title="Permanent link">&para;</a></h2>
+<h3 id="exercise-217">Exercise 2.17<a class="headerlink" href="#exercise-217" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; last-pair returns a pair which only contains the last element of a given list
+(define (last-pair items)
+  (if (null? (cdr items))
+    items
+    (last-pair (cdr items))))
+(last-pair (list 23 72 149 34)) ; (34)
+</code></pre>
+
+<h3 id="exercise-218">Exercise 2.18<a class="headerlink" href="#exercise-218" title="Permanent link">&para;</a></h3>
+<p>Note that <code>(cdr items)</code> returns either a list or nil, and <code>(car items)</code> returns a single number. From here, how are we able to reverse a list? Of course, without using the built-in <code>reverse</code>.</p>
+<p>Remember that <code>last-pair</code> takes in the last "pair" of the list (its <code>cdr</code> is an empty value, so really it's a pair with only one element). This can be a very useful procedure.</p>
+<p>A <code>reverse</code> procedure would use <code>last-pair</code> to get the very last item, and a <code>all-but-last</code> procedure which returns the entire list without the very last element.</p>
+<pre><code class="scheme">(define (all-but-last items)
+  (if (null? (cdr items))
+    ()
+    (cons (car items) (all-but-last (cdr items)))))
+(all-but-last (list 23 72 149 34)) ; (23 72 149)
+
+(define (reverse items)
+  (if (null? items)
+    items
+    (cons (car (last-pair items)) (reverse (all-but-last items)))))
+(reverse (list 23 72 149 34)) ; (34 149 72 23)
+</code></pre>
+
+<h3 id="exercise-219">Exercise 2.19<a class="headerlink" href="#exercise-219" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; first-denomination returns the first item on items
+(define (first-denomination items)
+  (car items))
+
+; except-first-denomination returns items but the first one
+(define (except-first-denomination items)
+  (cdr items))
+
+; no-more? checks if items is empty
+(define (no-more? items)
+  (null? items))
+
+; using the previous procedures, as well as those in the book
+(cc 100 us-coins) ; 292
+</code></pre>
+
+<p>On whether order matters for <code>coin-values</code>, after every iteration, <code>cc</code> branches between when <code>first-denomination</code> has been chosen, and when it isn't and <code>first-denomination</code> is no longer available as an option. The order of the coins should not matter, since all permutations will be attempted.</p>
+<p>A simple demonstration of this, although definitely not solid proof, can be seen if <code>us-coins</code> were reversed:</p>
+<pre><code class="scheme">(cc 100 (reverse us-coins)) ; also 292
+</code></pre>
+
+<h3 id="exercise-220">Exercise 2.20<a class="headerlink" href="#exercise-220" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (same-parity . items)
+  (define (is-same-parity? x) (= (remainder (car items) 2) (remainder x 2)))
+  (filter is-same-parity? items))
+(same-parity 1 2 3 4 5 6 7) ; (1 3 5 7)
+(same-parity 2 3 4 5 6 7) ; (2 4 6)
+</code></pre>
+
+<p>Wait, we aren't allowed to use <code>filter</code> yet? Okay then.</p>
+<pre><code class="scheme">(define (same-parity . items)
+  (define (is-same-parity? x) (= (remainder (car items) 2) (remainder x 2)))
+
+  ; recurse recurses through items with is-same-parity? and returns accum
+  (define (recurse items accum)
+    (cond
+      ((null? items) accum)
+      ((is-same-parity? (car items)) (recurse (cdr items) (cons (car items) accum)))
+      (else (recurse (cdr items) accum))))
+
+  ; one call to reverse since accum appends to the left every time
+  (reverse (recurse items ())))
+(same-parity 1 2 3 4 5 6 7) ; (1 3 5 7)
+(same-parity 2 3 4 5 6 7) ; (2 4 6)
+</code></pre>
+
+<h3 id="exercise-221">Exercise 2.21<a class="headerlink" href="#exercise-221" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (square-list items)
+  (if (null? items)
+    () ; &quot;nil&quot;
+    (cons (square (car items)) (square-list (cdr items)))))
+(square-list (list 1 2 3 4))
+
+(define (square-list items)
+  (map square items))
+(square-list (list 1 2 3 4))
+</code></pre>
+
+<h3 id="exercise-222">Exercise 2.22<a class="headerlink" href="#exercise-222" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (square-list items)
+  (define (iter things answer)
+    (if (null? things)
+      answer
+      (iter (cdr things)
+        (cons (square (car things))
+          answer))))
+  (iter items ()))
+(square-list (list 1 2 3 4))
+; (iter (list 1 2 3 4) ())
+; (iter (list 2 3 4) (cons (square 1) ()))
+; (iter (list 2 3 4) (list 1))
+; (iter (list 3 4) (cons (square 2) (list 1)))
+; (iter (list 3 4) (list 4 1))
+; (iter (list 4) (cons (square 3) (list 4 1)))
+; (iter (list 4) (list 9 4 1))
+; (iter () (cons (square 4) (list 9 4 1)))
+; (iter () (list 16 9 4 1))
+; (list 16 9 4 1)
+</code></pre>
+
+<p>For every subsequent value taken from <code>things</code>, it is appended at the start of <code>answer</code>. The answers are stacked FILO.</p>
+<pre><code class="scheme">(define (square-list items)
+  (define (iter things answer)
+    (if (null? things)
+      answer
+      (iter (cdr things)
+        (cons answer
+          (square (car things))))))
+  (iter items ()))
+(square-list (list 1 2 3 4))
+; (iter (list 1 2 3 4) ())
+; (iter (list 2 3 4) (cons () (square 1)))
+; (iter (list 2 3 4) (list () 1))
+; (iter (list 3 4) (cons (list () 1) (square 2)))
+; (iter (list 3 4) (list (list () 1) 4))
+; (iter (list 4) (cons (list (list () 1) 4) (square 3)))
+; (iter (list 4) (list (list (list () 1) 4) 9))
+; (iter () (cons (list (list (list () 1) 4) 9) (square 4)))
+; (iter () (list (list (list (list () 1) 4) 9) 16))
+; (list (list (list (list () 1) 4) 9) 16)
+</code></pre>
+
+<p>The problem here is that a list is <code>cons</code>'d to a value, which should be the other way around. The final pair has a <em>list</em> in its first half, and a single <em>value</em> at its second. This will yield MIT Scheme to display something weird:</p>
+<pre><code class="text">1 ]=&gt; (square-list (list 1 2 3 4))
+;Value: ((((() . 1) . 4) . 9) . 16)
+</code></pre>
+
+<h3 id="exercise-223">Exercise 2.23<a class="headerlink" href="#exercise-223" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (for-each f items)
+  (define (execute-and-iterate f items)
+    (f (car items))
+    (for-each f (cdr items)))
+
+  (if (not (null? items))
+    (execute-and-iterate f items)))
+
+(for-each
+  (lambda (x) (newline) (display x))
+  (list 57 321 88))
+; 57
+; 321
+; 88
+; returns unspecified value
+</code></pre></div>
             </div>
         </div>
 
