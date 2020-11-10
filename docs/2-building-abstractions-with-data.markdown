@@ -609,3 +609,139 @@ The problem here is that a list is `cons`'d to a value, which should be the othe
 ; 88
 ; returns unspecified value
 ```
+
+### Exercise 2.24
+
+```text
+1 ]=> (list 1 (list 2 (list 3 4)))
+;Value: (1 (2 (3 4)))
+```
+
+This looks like an interesting list. Let us graph it, then.
+
+![Image of the graph in cons-cell diagram form](/img/2-24.png)
+
+Notice, that this graph represents three lists, each of length 2. This is different from `(list 1 2 3 4)`, which would return a single list of length 4.
+
+### Exercise 2.25
+
+```scheme
+(car (cdr (car (cdr (cdr (list 1 3 (list 5 7) 9)))))) ; 7
+(car (car (list (list 7)))) ; 7
+(cdr (car (cdr (car (cdr (car (cdr (car (cdr (car (cdr (list 1 (list 2 (list 3 (list 4 (list 5 (list 6 7))))))))))))))))) ; 7
+```
+
+### Exercise 2.26
+
+```scheme
+(define x (list 1 2 3))
+(define y (list 4 5 6))
+
+; append appends two lists and combines their items
+(append x y) ; (1 2 3 4 5 6)
+
+; cons creates a cons pair of two items. Note that y is "linked" to the result
+(cons x y) ; ((1 2 3) 4 5 6)
+
+; list creates a list of the items it is provided with
+(list x y) ; ((1 2 3) (4 5 6))
+```
+
+### Exercise 2.27
+
+This is quite an interesting one. A reversal must also be done not only to the list in question, but to the items of the items if they do exist.
+
+```scheme
+(define (all-but-last items)
+  (if (null? (cdr items))
+    ()
+    (cons (car items) (all-but-last (cdr items)))))
+(all-but-last (list 23 72 149 34)) ; (23 72 149)
+
+; deep-reverse reverses items and its subitems
+(define (deep-reverse items)
+  (cond
+    ((null? items) items)
+    ((not (list? items)) items)
+    (else (cons (deep-reverse (car (last-pair items))) (deep-reverse (all-but-last items))))))
+
+(define x (list (list 1 2) (list 3 4)))
+(reverse x) ; ((3 4) (1 2))
+(deep-reverse x) ; ((4 3) (2 1))
+```
+
+### Exercise 2.28
+
+```scheme
+; fringe takes in items and returns a single flattened list
+(define (fringe items)
+  (cond
+    ((null? items) items)
+    ((not (list? items)) (list items))
+    (else (append (fringe (car items)) (fringe (cdr items))))))
+(define x (list (list 1 2) (list 3 4)))
+(fringe x) ; (1 2 3 4)
+(fringe (list x x)) ; (1 2 3 4 1 2 3 4)
+```
+
+### Exercise 2.29
+
+The following are the selectors for the `mobile` and `branch` structures defined by `make-mobile` and `make-branch`:
+
+```scheme
+; left-branch returns the left branch of a mobile
+(define (left-branch mobile) (car mobile))
+
+; right-branch returns the right branch of a mobile
+(define (right-branch mobile) (car (cdr mobile)))
+
+; branch-length returns the length of a branch
+(define (branch-length branch) (car branch))
+
+; branch-structure returns the structure attached to the branch
+(define (branch-structure branch) (car (cdr branch)))
+```
+
+The following is an implementation for `total-weight`:
+
+```scheme
+; total-weight returns the total weight of a mobile. Returns itself if mobile is a number.
+(define (total-weight mobile)
+  (if (pair? mobile) ; i.e., mobile is represented by a pair i.e., it *is* a mobile
+    (+ (total-weight (branch-structure (left-branch mobile)))
+      (total-weight (branch-structure (right-branch mobile))))
+    mobile))
+```
+
+Why I used `pair?` instead of `list?` is such that, in a later problem, the mobile and branch structures will be represented by `cons` instead of `list`. All `cons` are `list`s but not the other way around!
+
+The following is an implementation for `balanced?`:
+
+```scheme
+; torque returns the torque of a branch
+(define (torque branch)
+  (* (branch-length branch) (total-weight (branch-structure branch))))
+
+; balanced? checks if a mobile is balanced. Returns true if mobile is a number
+(define (balanced? mobile)
+  (if (not (pair? mobile))
+    #t
+    (= (torque (left-branch mobile))
+      (torque (right-branch mobile)))))
+```
+
+Going to the fourth problem, by doing this, we would only need to change `(car (cdr ...))` to `(cdr ...)`:
+
+```scheme
+; left-branch returns the left branch of a mobile
+(define (left-branch mobile) (car mobile))
+
+; right-branch returns the right branch of a mobile
+(define (right-branch mobile) (cdr mobile))
+
+; branch-length returns the length of a branch
+(define (branch-length branch) (car branch))
+
+; branch-structure returns the structure attached to the branch
+(define (branch-structure branch) (cdr branch))
+```
