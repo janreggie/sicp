@@ -745,3 +745,119 @@ Going to the fourth problem, by doing this, we would only need to change `(car (
 ; branch-structure returns the structure attached to the branch
 (define (branch-structure branch) (cdr branch))
 ```
+
+### Exercise 2.30
+
+```scheme
+; square-tree squares a tree
+(define (square-tree tree)
+  (map (lambda (sub-tree)
+      (if (pair? sub-tree)
+        (square-tree sub-tree)
+        (square sub-tree)))
+    tree))
+(square-tree
+ (list 1
+       (list 2 (list 3 4) 5)
+       (list 6 7))) ; ==> (1 (4 (9 16) 25) (36 49))
+```
+
+### Exercise 2.31
+
+```scheme
+; tree-map maps f to tree such that element -> (f element)
+(define (tree-map f tree)
+  (map (lambda (sub-tree)
+      (if (pair? sub-tree)
+        (tree-map f sub-tree)
+        (f sub-tree)))
+    tree))
+```
+
+### Exercise 2.32
+
+For each element `e` which is an element of `S`, all subsets of `S` will either have `e`, or not.
+
+```scheme
+(define (subsets s)
+  (if (null? s)
+    (list ())
+    (let ((rest (subsets (cdr s))))
+      (append
+        rest
+        (map (lambda (subset) (cons (car s) subset)) rest)))))
+(subsets (list 1 2 3)) ; ==> (() (3) (2) (2 3) (1) (1 3) (1 2) (1 2 3))
+```
+
+The return value is the combination of `rest`, which are the subsets of `cdr s`, and `(map (lambda (subset) (cons (car s) subset)) rest)`, which is `car s` appended to each value of `rest`. Every element in the return value will either have `car s` or not.
+
+### Exercise 2.33
+
+`map` is defined as accumulating a list using `sequence` by repeatedly applying `(p elem)` to every `elem`:
+
+```scheme
+(define (map p sequence)
+  (accumulate
+    (lambda (x y) (cons (p x) y))
+    ()
+    sequence))
+```
+
+`append` performs a `cons` for every `elem` of `seq1` into `seq2`:
+
+```scheme
+(define (append seq1 seq2)
+  (accumulate cons seq2 seq1))
+```
+
+`length` iterates the value by 1 every time an element is encountered:
+
+```scheme
+(define (length sequence)
+  (accumulate
+    (lambda (_ y) (+ y 1))
+    0
+    sequence))
+```
+
+### Exercise 2.34
+
+In the problem statement, the keyword `higher-terms` was used, which was a bit of a misnomer and threw me off for a while.
+
+```scheme
+; horner-eval performs a Horner evaluation on coefficient-sequence with a particular x.
+(define (horner-eval x coefficient-sequence)
+  (accumulate
+    (lambda (this-coeff higher-terms)
+      (+ this-coeff (* higher-terms x)))
+    0
+    coefficient-sequence))
+(horner-eval 2 (list 1 3 0 5 0 1)) ; ==> 79
+```
+
+### Exercise 2.35
+
+```scheme
+; count-leaves counts the number of leaves in t
+(define (count-leaves t)
+  (accumulate
+    (lambda (current-value total)
+      (+ total (length current-value)))
+    0
+    (map enumerate-tree t)))
+```
+
+### Exercise 2.36
+
+```scheme
+; accumulate-n takes in a sequence of sequences and accumulates using op and init.
+(define (accumulate-n op init seqs)
+  (if (null? (car seqs))
+    ()
+    (cons (accumulate op init (map car seqs))
+      (accumulate-n op init (map cdr seqs)))))
+(define s (list (list 1 2 3) (list 4 5 6) (list 7 8 9) (list 10 11 12)))
+(accumulate-n + 0 s) ; ==> (22 26 30)
+```
+
+Inside the `cons` statement, we combine two values: the accumulated result of the first items of `seqs`, and the results of the remaining items of `seqs`. To get the first items of `seqs`, `(map car seqs)` is used, where every sequence is mapped to `car` thus returning the first item. Similarly, to get the remaining items of `seqs`, `(map cdr seqs)` is used.
