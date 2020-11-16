@@ -207,6 +207,46 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-230" class="nav-link">Exercise 2.30</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-231" class="nav-link">Exercise 2.31</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-232" class="nav-link">Exercise 2.32</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-233" class="nav-link">Exercise 2.33</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-234" class="nav-link">Exercise 2.34</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-235" class="nav-link">Exercise 2.35</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-236" class="nav-link">Exercise 2.36</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-237" class="nav-link">Exercise 2.37</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-238" class="nav-link">Exercise 2.38</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-239" class="nav-link">Exercise 2.39</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
               </ul>
@@ -822,6 +862,205 @@ S\left(\left[a,b\right]\right) = \left\{\begin{array}{lr}
 
 ; branch-structure returns the structure attached to the branch
 (define (branch-structure branch) (cdr branch))
+</code></pre>
+
+<h3 id="exercise-230">Exercise 2.30<a class="headerlink" href="#exercise-230" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; square-tree squares a tree
+(define (square-tree tree)
+  (map (lambda (sub-tree)
+      (if (pair? sub-tree)
+        (square-tree sub-tree)
+        (square sub-tree)))
+    tree))
+(square-tree
+ (list 1
+       (list 2 (list 3 4) 5)
+       (list 6 7))) ; ==&gt; (1 (4 (9 16) 25) (36 49))
+</code></pre>
+
+<h3 id="exercise-231">Exercise 2.31<a class="headerlink" href="#exercise-231" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; tree-map maps f to tree such that element -&gt; (f element)
+(define (tree-map f tree)
+  (map (lambda (sub-tree)
+      (if (pair? sub-tree)
+        (tree-map f sub-tree)
+        (f sub-tree)))
+    tree))
+</code></pre>
+
+<h3 id="exercise-232">Exercise 2.32<a class="headerlink" href="#exercise-232" title="Permanent link">&para;</a></h3>
+<p>For each element <code>e</code> which is an element of <code>S</code>, all subsets of <code>S</code> will either have <code>e</code>, or not.</p>
+<pre><code class="scheme">(define (subsets s)
+  (if (null? s)
+    (list ())
+    (let ((rest (subsets (cdr s))))
+      (append
+        rest
+        (map (lambda (subset) (cons (car s) subset)) rest)))))
+(subsets (list 1 2 3)) ; ==&gt; (() (3) (2) (2 3) (1) (1 3) (1 2) (1 2 3))
+</code></pre>
+
+<p>The return value is the combination of <code>rest</code>, which are the subsets of <code>cdr s</code>, and <code>(map (lambda (subset) (cons (car s) subset)) rest)</code>, which is <code>car s</code> appended to each value of <code>rest</code>. Every element in the return value will either have <code>car s</code> or not.</p>
+<h3 id="exercise-233">Exercise 2.33<a class="headerlink" href="#exercise-233" title="Permanent link">&para;</a></h3>
+<p><code>map</code> is defined as accumulating a list using <code>sequence</code> by repeatedly applying <code>(p elem)</code> to every <code>elem</code>:</p>
+<pre><code class="scheme">(define (map p sequence)
+  (accumulate
+    (lambda (x y) (cons (p x) y))
+    ()
+    sequence))
+</code></pre>
+
+<p><code>append</code> performs a <code>cons</code> for every <code>elem</code> of <code>seq1</code> into <code>seq2</code>:</p>
+<pre><code class="scheme">(define (append seq1 seq2)
+  (accumulate cons seq2 seq1))
+</code></pre>
+
+<p><code>length</code> iterates the value by 1 every time an element is encountered:</p>
+<pre><code class="scheme">(define (length sequence)
+  (accumulate
+    (lambda (_ y) (+ y 1))
+    0
+    sequence))
+</code></pre>
+
+<h3 id="exercise-234">Exercise 2.34<a class="headerlink" href="#exercise-234" title="Permanent link">&para;</a></h3>
+<p>In the problem statement, the keyword <code>higher-terms</code> was used, which was a bit of a misnomer and threw me off for a while.</p>
+<pre><code class="scheme">; horner-eval performs a Horner evaluation on coefficient-sequence with a particular x.
+(define (horner-eval x coefficient-sequence)
+  (accumulate
+    (lambda (this-coeff higher-terms)
+      (+ this-coeff (* higher-terms x)))
+    0
+    coefficient-sequence))
+(horner-eval 2 (list 1 3 0 5 0 1)) ; ==&gt; 79
+</code></pre>
+
+<h3 id="exercise-235">Exercise 2.35<a class="headerlink" href="#exercise-235" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; count-leaves counts the number of leaves in t
+(define (count-leaves t)
+  (accumulate
+    (lambda (current-value total)
+      (+ total (length current-value)))
+    0
+    (map enumerate-tree t)))
+</code></pre>
+
+<h3 id="exercise-236">Exercise 2.36<a class="headerlink" href="#exercise-236" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; accumulate-n takes in a sequence of sequences and accumulates using op and init.
+(define (accumulate-n op init seqs)
+  (if (null? (car seqs))
+    ()
+    (cons (accumulate op init (map car seqs))
+      (accumulate-n op init (map cdr seqs)))))
+(define s (list (list 1 2 3) (list 4 5 6) (list 7 8 9) (list 10 11 12)))
+(accumulate-n + 0 s) ; ==&gt; (22 26 30)
+</code></pre>
+
+<p>Inside the <code>cons</code> statement, we combine two values: the accumulated result of the first items of <code>seqs</code>, and the results of the remaining items of <code>seqs</code>. To get the first items of <code>seqs</code>, <code>(map car seqs)</code> is used, where every sequence is mapped to <code>car</code> thus returning the first item. Similarly, to get the remaining items of <code>seqs</code>, <code>(map cdr seqs)</code> is used.</p>
+<h3 id="exercise-237">Exercise 2.37<a class="headerlink" href="#exercise-237" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">; matrix-*-vector performs a multiplication between a matrix and a vector
+; and returns a vector
+(define (matrix-*-vector m v)
+  (map
+    (lambda (row) (dot-product row v))
+    m))
+
+; Example from https://mathinsight.org/matrix_vector_multiplication
+(matrix-*-vector
+  (list
+    (list 1 -1 2)
+    (list 0 -3 1))
+  (list 2 1 0)) ; (1 -3)
+
+; transpose transposes a matrix
+(define (transpose mat)
+  (accumulate-n
+    cons ; used to append each element for every column in the matrix
+    ()
+    mat))
+
+; Example from https://en.wikipedia.org/wiki/Transpose
+(transpose
+  (list
+    (list 1 2)
+    (list 3 4)
+    (list 5 6))) ; ((1 3 5) (2 4 6))
+
+; matrix-*-matrix performs a multiplication between two matrices
+(define (matrix-*-matrix m n)
+  (let ((cols (transpose n)))
+    (map
+      (lambda (row)
+        (matrix-*-vector cols row))
+      m)))
+
+; Example from https://mathinsight.org/matrix_vector_multiplication
+(matrix-*-matrix
+  (list
+    (list 0 4 -2)
+    (list -4 -3 0))
+  (list
+    (list 0 1)
+    (list 1 -1)
+    (list 2 3))) ; ((0 -10) (-3 -1))
+</code></pre>
+
+<h3 id="exercise-238">Exercise 2.38<a class="headerlink" href="#exercise-238" title="Permanent link">&para;</a></h3>
+<p>For the first pair of statements:</p>
+<pre><code class="scheme">(fold-right / 1 (list 1 2 3))
+; (/ 1 (fold-right / 1 (list 2 3)))
+; (/ 1 (/ 2 (fold-right / 1 (list 3))))
+; (/ 1 (/ 2 (/ 3 (fold-right / 1 ()))))
+; (/ 1 (/ 2 (/ 3 1)))
+; (/ 1 (/ 2 3))
+; (/ 1 (0.667)) ; using floating-points instead of rationals for this showcasing
+; ==&gt; 1.5
+
+(fold-left  / 1 (list 1 2 3))
+; (iter 1 (list 1 2 3))
+; (iter (/ 1 1) (list 2 3))
+; (iter 1 (list 2 3))
+; (iter (/ 1 2) (list 3))
+; (iter 0.5 (list 3))
+; (iter (/ 0.5 3) ())
+; (iter 0.167 ())
+; ==&gt; 0.167
+</code></pre>
+
+<p>The first statement was <span class="arithmatex">\(1 \div \left(2 \div 3\right)\)</span>, while the second one was <span class="arithmatex">\(\left(1 \div 2\right) \div 3\)</span></p>
+<p>For the second pair of statements:</p>
+<pre><code class="scheme">(fold-right list () (list 1 2 3))
+; (list 1 (fold-right list () (list 2 3)))
+; (list 1 (list 2 (fold-right list () (list 3))))
+; (list 1 (list 2 (list 3 (fold-right list () ()))))
+; (list 1 (list 2 (list 3 ())))
+; ==&gt; (1 (2 (3 ())))
+
+(fold-left  list () (list 1 2 3))
+; (iter () (list 1 2 3))
+; (iter (list () 1) (list 2 3))
+; (iter (list (list () 1) 2) (list 3))
+; (iter (list (list (list () 1) 2) 3) ())
+; ==&gt; (((() 1) 2) 3)
+</code></pre>
+
+<p>For <code>fold-left</code> and <code>fold-right</code> to have the same result, <code>(op a b)</code> must equal <code>(op b a)</code>, that is, the order of operations ought not matter.</p>
+<h3 id="exercise-239">Exercise 2.39<a class="headerlink" href="#exercise-239" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (reverse sequence)
+  (fold-right 
+    (lambda (x y)
+      (append y (list x)))
+    ()
+    sequence))
+(reverse (list 1 2 3 4)) ; (4 3 2 1)
+
+(define (reverse sequence)
+  (fold-left 
+    (lambda (x y)
+      (cons y x))
+    ()
+    sequence))
+(reverse (list 1 2 3 4)) ; (4 3 2 1)
 </code></pre></div>
             </div>
         </div>
