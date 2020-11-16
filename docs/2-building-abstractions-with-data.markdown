@@ -861,3 +861,120 @@ In the problem statement, the keyword `higher-terms` was used, which was a bit o
 ```
 
 Inside the `cons` statement, we combine two values: the accumulated result of the first items of `seqs`, and the results of the remaining items of `seqs`. To get the first items of `seqs`, `(map car seqs)` is used, where every sequence is mapped to `car` thus returning the first item. Similarly, to get the remaining items of `seqs`, `(map cdr seqs)` is used.
+
+### Exercise 2.37
+
+```scheme
+; matrix-*-vector performs a multiplication between a matrix and a vector
+; and returns a vector
+(define (matrix-*-vector m v)
+  (map
+    (lambda (row) (dot-product row v))
+    m))
+
+; Example from https://mathinsight.org/matrix_vector_multiplication
+(matrix-*-vector
+  (list
+    (list 1 -1 2)
+    (list 0 -3 1))
+  (list 2 1 0)) ; (1 -3)
+
+; transpose transposes a matrix
+(define (transpose mat)
+  (accumulate-n
+    cons ; used to append each element for every column in the matrix
+    ()
+    mat))
+
+; Example from https://en.wikipedia.org/wiki/Transpose
+(transpose
+  (list
+    (list 1 2)
+    (list 3 4)
+    (list 5 6))) ; ((1 3 5) (2 4 6))
+
+; matrix-*-matrix performs a multiplication between two matrices
+(define (matrix-*-matrix m n)
+  (let ((cols (transpose n)))
+    (map
+      (lambda (row)
+        (matrix-*-vector cols row))
+      m)))
+
+; Example from https://mathinsight.org/matrix_vector_multiplication
+(matrix-*-matrix
+  (list
+    (list 0 4 -2)
+    (list -4 -3 0))
+  (list
+    (list 0 1)
+    (list 1 -1)
+    (list 2 3))) ; ((0 -10) (-3 -1))
+```
+
+### Exercise 2.38
+
+For the first pair of statements:
+
+```scheme
+(fold-right / 1 (list 1 2 3))
+; (/ 1 (fold-right / 1 (list 2 3)))
+; (/ 1 (/ 2 (fold-right / 1 (list 3))))
+; (/ 1 (/ 2 (/ 3 (fold-right / 1 ()))))
+; (/ 1 (/ 2 (/ 3 1)))
+; (/ 1 (/ 2 3))
+; (/ 1 (0.667)) ; using floating-points instead of rationals for this showcasing
+; ==> 1.5
+
+(fold-left  / 1 (list 1 2 3))
+; (iter 1 (list 1 2 3))
+; (iter (/ 1 1) (list 2 3))
+; (iter 1 (list 2 3))
+; (iter (/ 1 2) (list 3))
+; (iter 0.5 (list 3))
+; (iter (/ 0.5 3) ())
+; (iter 0.167 ())
+; ==> 0.167
+```
+
+The first statement was $1 \div \left(2 \div 3\right)$, while the second one was $\left(1 \div 2\right) \div 3$
+
+For the second pair of statements:
+
+```scheme
+(fold-right list () (list 1 2 3))
+; (list 1 (fold-right list () (list 2 3)))
+; (list 1 (list 2 (fold-right list () (list 3))))
+; (list 1 (list 2 (list 3 (fold-right list () ()))))
+; (list 1 (list 2 (list 3 ())))
+; ==> (1 (2 (3 ())))
+
+(fold-left  list () (list 1 2 3))
+; (iter () (list 1 2 3))
+; (iter (list () 1) (list 2 3))
+; (iter (list (list () 1) 2) (list 3))
+; (iter (list (list (list () 1) 2) 3) ())
+; ==> (((() 1) 2) 3)
+```
+
+For `fold-left` and `fold-right` to have the same result, `(op a b)` must equal `(op b a)`, that is, the order of operations ought not matter.
+
+### Exercise 2.39
+
+```scheme
+(define (reverse sequence)
+  (fold-right 
+    (lambda (x y)
+      (append y (list x)))
+    ()
+    sequence))
+(reverse (list 1 2 3 4)) ; (4 3 2 1)
+
+(define (reverse sequence)
+  (fold-left 
+    (lambda (x y)
+      (cons y x))
+    ()
+    sequence))
+(reverse (list 1 2 3 4)) ; (4 3 2 1)
+```
