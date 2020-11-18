@@ -963,7 +963,7 @@ For `fold-left` and `fold-right` to have the same result, `(op a b)` must equal 
 
 ```scheme
 (define (reverse sequence)
-  (fold-right 
+  (fold-right
     (lambda (x y)
       (append y (list x)))
     ()
@@ -971,7 +971,7 @@ For `fold-left` and `fold-right` to have the same result, `(op a b)` must equal 
 (reverse (list 1 2 3 4)) ; (4 3 2 1)
 
 (define (reverse sequence)
-  (fold-left 
+  (fold-left
     (lambda (x y)
       (cons y x))
     ()
