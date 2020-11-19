@@ -978,3 +978,45 @@ For `fold-left` and `fold-right` to have the same result, `(op a b)` must equal 
     sequence))
 (reverse (list 1 2 3 4)) ; (4 3 2 1)
 ```
+
+### Exercise 2.40
+
+```scheme
+; unique-pairs generates a sequence of (i,j) with 1<=j<i<=n.
+(define (unique-pairs n)
+  (flatmap
+    (lambda (i)
+      (map
+        (lambda (j) (list i j))
+        (enumerate-interval 1 (- i 1))))
+    (enumerate-interval 1 n)))
+(unique-pairs 6)
+
+; prime-sum-pairs generates a sequence of (i,j) from unique-pairs
+; such that i+j is prime
+(define (prime-sum-pairs n)
+  ; sum gets the sum of the values of a pair
+  (define (sum p) (+ (car p) (cadr p)))
+  (map
+    (lambda (p) (append p (list (sum p))))
+    (filter
+      (lambda (p) (prime? (sum p)))
+      (unique-pairs n))))
+(prime-sum-pairs 6)
+```
+
+### Exercise 2.41
+
+```scheme
+; triples-with-sum returns a sequence of ordered pairs (i,j,k)
+; such that i+j+k=s
+(define (triples-with-sum s)
+  (flatmap
+    (lambda (i)
+      (map
+        (lambda (j)
+          (list i j (- s i j)))
+        (enumerate-interval 1 (- s i 1))))
+    (enumerate-interval 1 s)))
+(triples-with-sum 6) ; ((1 1 4) (1 2 3) (1 3 2) (1 4 1) (2 1 3) (2 2 2) (2 3 1) (3 1 2) (3 2 1) (4 1 1))
+```
