@@ -1236,4 +1236,70 @@ and let us look at Louis Reasoner's code:
 
 We know that the order of operations have been swapped, but why does the second block of code run much, much slower than the first one? It took almost instantly to run `(queens 6)` originally, whereas it took around 4 seconds with the mistake.
 
-Consider that, at the first block of code, that `queen-cols` should only be called once, as a parameter of `flatmap`. However, at the second block of code, `queen-cols` is called `board-size` number of times since, for every value of `(enumerate-interval 1 board-size)`, the value is passed onto `adjoin-position` which calls `queen-cols`.
+Consider that, at the first block of code, that `queen-cols` should only be called once, as a parameter of `flatmap`. However, at the second block of code, `queen-cols` is called `board-size` number of times since, for every value of `(enumerate-interval 1 board-size)`, the value is passed onto the `lambda` which calls `queen-cols` every time that happpens.
+
+It took around 91 milliseconds to run the Eight Queens problem but it took 70434 milliseconds to run Louis's version. I can't explain the discrepancy well but [this blogpost by Werner de Groot](https://wernerdegroot.wordpress.com/2015/08/01/sicp-exercise-2-43/) can.
+
+### Exercise 2.44
+
+```scheme
+(define (up-split painter n)
+  (if (= n 0)
+      painter
+      (let ((smaller (up-split painter (- n 1))))
+        (below painter (beside smaller smaller)))))
+```
+
+### Exercise 2.45
+
+```scheme
+; split returns a "splitter" like right-split and up-split
+; with a primary direction d1 and secondary direction d2
+(define (split d1 d2)
+  (define (splitter painter n)
+      (if (= n 0)
+          painter
+          (let ((smaller (splitter painter (- n 1))))
+            (d1 painter (d2 smaller smaller)))))
+  splitter)
+(define right-split (split beside below))
+(define up-split (split below beside))
+```
+
+### Exercise 2.46
+
+```scheme
+; make-vect, xcor-vect, and ycor-vect implement a vector object.
+(define (make-vect x y) (cons x y))
+(define (xcor-vect v) (car v))
+(define (ycor-vect v) (cdr v))
+
+; add-vect, sub-vect, and scale-vect implement vector addition and scaling
+(define (add-vect v1 v2)
+  (make-vect (+ (xcor-vect v1) (xcor-vect v2))
+             (+ (ycor-vect v1) (ycor-vect v2))))
+(define (sub-vect v1 v2)
+  (make-vect (- (xcor-vect v1) (xcor-vect v2))
+             (- (ycor-vect v1) (ycor-vect v2))))
+(define (scale-vect s v)
+  (make-vect (* s (xcor-vect v))
+             (* s (ycor-vect v))))
+```
+
+### Exercise 2.47
+
+```scheme
+(define (make-frame origin edge1 edge2)
+  (list origin edge1 edge2))
+(define (origin-frame f) (car f))
+(define (edge1-frame f) (cadr f))
+(define (edge2-frame f) (caddr f))
+```
+
+```scheme
+(define (make-frame origin edge1 edge2)
+  (cons origin (cons edge1 edge2)))
+(define (origin-frame f) (car f))
+(define (edge1-frame f) (cadr f))
+(define (edge2-frame f) (cddr f))
+```
