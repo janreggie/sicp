@@ -1303,3 +1303,95 @@ It took around 91 milliseconds to run the Eight Queens problem but it took 70434
 (define (edge1-frame f) (cadr f))
 (define (edge2-frame f) (cddr f))
 ```
+
+### Exercise 2.48
+
+```scheme
+; make-segment, start-segment, and end-segment are getters and setters
+; for segments represented by two vectors.
+(define (make-segment v1 v2) (cons v1 v2))
+(define (start-segment s) (car s))
+(define (end-segment s) (cdr s))
+```
+
+### Exercise 2.49
+
+```scheme
+(define draw-outline
+  (segments->painter
+   (list
+    (make-segment (make-vect 0.0 0.0) (make-vect 0.0 1.0))
+    (make-segment (make-vect 0.0 1.0) (make-vect 1.0 1.0))
+    (make-segment (make-vect 1.0 1.0) (make-vect 1.0 0.0))
+    (make-segment (make-vect 1.0 0.0) (make-vect 0.0 0.0)))))
+
+(define draw-diagonals
+  (segments->painter
+   (list
+    (make-segment (make-vect 0.0 0.0) (make-vect 1.0 1.0))
+    (make-segment (make-vect 0.0 1.0) (make-vect 1.0 0.0)))))
+
+(define draw-varignon
+  (segments->painter
+   (list
+    (make-segment (make-vect 0.5 0.0) (make-vect 1.0 0.5))
+    (make-segment (make-vect 1.0 0.5) (make-vect 0.5 1.0))
+    (make-segment (make-vect 0.5 1.0) (make-vect 0.0 0.5))
+    (make-segment (make-vect 0.0 0.5) (make-vect 0.5 0.0)))))
+```
+
+The `wave` painter is too complex for me to represent here.
+
+### Exercise 2.50
+
+This requires a bit of spatial thinking to do. Just note that the base case has its origin at (0, 0), edge1's end at (1, 0), and edge2's end at (0, 1).
+
+```scheme
+(define (flip-horiz painter)
+  (transform-painter painter
+                     (make-vect 1.0 0.0)
+                     (make-vect 0.0 0.0)
+                     (make-vect 1.0 1.0)))
+
+(define (rotate180 painter)
+  (transform-painter painter
+                     (make-vect 1.0 1.0)
+                     (make-vect 0.0 1.0)
+                     (make-vect 1.0 0.0)))
+
+(define (rotate270 painter)
+  (transform-painter painter
+                     (make-vect 0.0 1.0)
+                     (make-vect 0.0 0.0)
+                     (make-vect 1.0 1.0)))
+```
+
+### Exercise 2.51
+
+```scheme
+(define (below painter1 painter2)
+  (let ((split-point (make-vect 0.0 0.5)))
+    (let ((paint-below (transform-painter
+                        painter1
+                        (make-vect 0.0 0.0)
+                        (make-vect 1.0 0.0)
+                        split-point))
+          (paint-above (transform-painter
+                        painter2
+                        split-point
+                        (make-vect 1.0 0.5)
+                        (make-vect 0.0 1.0))))
+      (lambda (frame)
+        (paint-below frame)
+        (paint-above frame)))))
+```
+
+Alternatively, we could define `below` using `beside` with some rotation. The following is a visualization:
+
+![Representation on how to solve 2.51 using rotation and `beside`](/img/2-51.svg)
+
+```scheme
+(define (below painter1 painter2)
+  (rotate90 (beside (rotate270 painter1)
+                    (rotate270 painter2))))
+```
