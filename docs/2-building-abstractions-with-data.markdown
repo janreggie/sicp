@@ -1395,3 +1395,80 @@ Alternatively, we could define `below` using `beside` with some rotation. The fo
   (rotate90 (beside (rotate270 painter1)
                     (rotate270 painter2))))
 ```
+
+### Exercise 2.52
+
+As mentioned, `wave` is a bit too complex for me to represent here. The other problems can be solved though.
+
+`corner-split` but using only one copy of `up-split` and `right-split` instead of two:
+
+```scheme
+(define (corner-split painter n)
+  (if (= n 0)
+      painter
+      (beside (below painter (up-split painter (- n 1)))
+              (below (right-split painter (- n 1)) (corner-split painter (- n 1))))))
+```
+
+`square-limit` that displays `rogers` outwards (the painter should be horizontally flipped):
+
+```scheme
+(define (square-limit painter n)
+  (let ((quarter (corner-split (flip-horiz painter) n)))
+    (let ((half (beside (flip-horiz quarter) quarter)))
+      (below (flip-vert half) half))))
+```
+
+## 2.3 Symbolic Data
+
+### Exercise 2.53
+
+```scheme
+(list 'a 'b 'c)
+; ==> (a b c)
+(list (list 'george))
+; ==> ((george))
+(cdr '((x1 x2) (y1 y2)))
+; ==> ((y1 y2))
+(cadr '((x1 x2) (y1 y2)))
+; ==> (y1 y2)
+(pair? (car '(a short list)))
+; ==> #f
+(memq 'red '((red shoes) (blue socks)))
+; ==> #f
+(memq 'red '(red shoes blue socks))
+; ==> (red shoes blue socks)
+```
+
+### Exercise 2.54
+
+```scheme
+(define (equal? x y)
+  (cond
+    ((and (null? x) (null? y)) #t)
+    ((or (null? x) (null? y)) #f)
+    (else (and (eq? (car x) (car y))
+               (equal? (cdr x) (cdr y))))))
+
+(equal? (list 'a 'b 'c) (list 'a 'b 'c))    ; #t
+(equal? (list 'a 'b 'c) (list 'a 'b 'c 'd)) ; #f
+```
+
+### Exercise 2.55
+
+Consider that `'abracadabra` provides the symbol `abracadabra`. It is interesting to note what `''abracadabra` (representing the symbol *of* the symbol `abracadabra`) yields:
+
+```scheme
+'abracadabra
+; ==> abracadabra
+''abracadabra
+; ==> (quote abracadabra)
+```
+
+Consider then that `'a` is actually a shorthand for `(quote a)`. Because of this, `''a` is simply `'(quote a)`, which would yield `(quote a)`.
+
+```scheme
+(car ''abracadabra)
+; (car '(quote abracadabra))
+; ==> quote
+```
