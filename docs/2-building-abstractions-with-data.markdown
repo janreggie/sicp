@@ -1472,3 +1472,86 @@ Consider then that `'a` is actually a shorthand for `(quote a)`. Because of this
 ; (car '(quote abracadabra))
 ; ==> quote
 ```
+
+### Exercise 2.56
+
+```scheme
+(define (make-exponentiation b e)
+  (cond ((=number? e 0) b)
+        ((=number? b 1) 1)
+        ((and (number? b) (number? e)) (expt b e))
+        (else (list '** b e))))
+(define (exponentiation? x) (and (pair? x) (eq? (car x) '**)))
+(define (base e) (cadr e))
+(define (exponent e) (caddr e))
+
+(define (deriv exp var)
+  (cond
+    ; other conditions go here
+    ((exponentiation? exp)
+     (make-product
+      (make-product
+       (exponent exp)
+       (make-exponentiation (base exp) (- (exponent exp) 1)))
+      (deriv (base exp) var)))
+    (else (error "unknown expression type: DERIV" exp))))
+```
+
+### Exercise 2.57
+
+I had to weed out the constants from `addends` and separating their sum from the remaining elements. In addition, I had to change the definition of `augend` to allow for arbitrary-length expressions:
+
+```scheme
+; make-sum creates a sum from variadic parameter addends.
+; Sums first the constants and then creates this recursive definition
+; such that (a+b+c) == (a+(b+c)).
+(define (make-sum . addends)
+  ; sum-constantless sums addends recursively
+  ; where addends has no constant.
+  (define (sum-constantless addends)
+    (if (= (length addends) 1)
+        (car addends)
+        (list '+ (car addends) (sum-constantless (cdr addends)))))
+
+  (let ((constants-sum (accumulate + 0 (filter number? addends)))
+        (remaining (filter (lambda (x) (not (number? x))) addends)))
+
+    (cond ((null? remaining) constants-sum)
+          ((= constants-sum 0) (sum-constantless remaining))
+          (else (list '+ constants-sum (sum-constantless remaining))))))
+
+
+(define (sum? x) (and (pair? x) (eq? (car x) '+)))
+(define (addend s) (cadr s))
+(define (augend s)
+  (if (= (length (cddr s)) 1)
+      (caddr s)
+      (apply make-sum (cddr s))))
+```
+
+A similar process is going on with `make-product`
+
+```scheme
+; make-product returns a product from a set of factors
+(define (make-product . factors)
+  ; product-constantless multiplies recursively where factors has no constant
+  (define (product-constantless factors)
+    (if (= (length factors) 1)
+        (car factors)
+        (list '* (car factors) (product-constantless (cdr factors)))))
+
+  (let ((constants-product (accumulate * 1 (filter number? factors)))
+        (remaining (filter (lambda (x) (not (number? x))) factors)))
+
+    (cond ((null? remaining) constants-product)
+          ((= constants-product 0) 0)
+          ((= constants-product 1) (product-constantless remaining))
+          (else (list '* constants-product (product-constantless remaining))))))
+
+(define (product? x) (and (pair? x) (eq? (car x) '*)))
+(define (multiplier p) (cadr p))
+(define (multiplicand p)
+  (if (= (length (cddr p)) 1)
+      (caddr p)
+      (apply make-product (cddr p))))
+```
