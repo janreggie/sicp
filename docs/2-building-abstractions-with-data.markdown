@@ -1661,3 +1661,129 @@ While not checking for presence by `adjoin-set` can be seen as a benefit, and `u
 
 (union-set '(1 2 5) '(2 4 6)) ; ==> (1 2 4 5 6)
 ```
+
+### Exercise 2.63
+
+Each of the three trees in Figure 2.16 can be expressed as follows:
+
+```scheme
+(define t1
+  '(7
+    (3 (1 () ())
+       (5 () ()))
+    (9 ()
+       (11 () ()))))
+(define t2
+  '(3
+    (1 () ())
+    (7 (5 () ())
+       (9 ()
+          (11 () ())))))
+(define t3
+  '(5
+    (3 (1 () ())
+       ())
+    (9 (7 () ())
+       (11 () ()))))
+```
+
+Both `tree->list-1` and `tree->list-2` produce the same results for each of the three trees:
+
+```scheme
+(tree->list-1 t1) ; ==> (1 3 5 7 9 11)
+(tree->list-2 t1) ; ==> (1 3 5 7 9 11)
+(tree->list-1 t2) ; ==> (1 3 5 7 9 11)
+(tree->list-2 t2) ; ==> (1 3 5 7 9 11)
+(tree->list-1 t3) ; ==> (1 3 5 7 9 11)
+(tree->list-2 t3) ; ==> (1 3 5 7 9 11)
+```
+
+Let us investigate each of their behaviors:
+
+```scheme
+;  (tree->list-1 t1)
+;  (append (tree->list-1 (left-branch t1))
+;          (cons (entry t1) (tree->list-1 (right-branch t1))))
+;  (append (tree->list-1 '(3 (1 () ()) (5 () ())))
+;          (cons 7 (tree->list-1 '(9 () (11 () ())))))
+;  (append
+;   (append (tree->list-1 '(1 () ()))
+;           (cons 3 (tree->list-1 '(5 () ()))))
+;    (cons 7
+;          (append (tree->list-1 '())
+;                  (cons 9 (tree->list-1 '(11 () ()))))))
+;  (append
+;   (append (append (tree->list-1 '())
+;                   (cons 1 (tree->list-1 '())))
+;           (cons 3 (append (tree->list-1 '())
+;                           (cons 5 (tree->list-1 '())))))
+;   (cons 7
+;         (append '()
+;                 (cons 9 (append (tree->list-1 '())
+;                                 (cons 11 (tree->list-1 '())))))))
+;  (append
+;   (append (append '()
+;                   (cons 1 '()))
+;           (cons 3 (append '()
+;                           (cons 5 '()))))
+;   (cons 7
+;         (append '()
+;                 (cons 9 (append '()
+;                                 (cons 11 '()))))))
+;  (append
+;   (append '(1)
+;           '(3 5))
+;   (cons 7
+;         (append '()
+;                 '(9 11))))
+;  ==> '(1 3 5 7 9 11)
+```
+
+`tree->list-1` is a tree-recursive function which does an `append` every time it is called with a non-empty argument. Note that `append` is a very costly function as it has to traverse to the end of the list every time it is called, and every succeeding call to `append` will have an argument longer than the previous one.
+
+```scheme
+(tree->list-2 t1)
+; (copy-to-list t1 '())
+; (copy-to-list
+;  (left-branch t1)
+;  (cons 7 (copy-to-list (right-branch t1)
+;                        '())))
+; (copy-to-list
+;  '(3 (1 () ()) (5 () ()))
+;  (cons 7 (copy-to-list
+;           '(9 () (11 () ()))
+;           '())))
+; (copy-to-list
+;  '(3 (1 () ()) (5 () ()))
+;  (cons 7 (copy-to-list
+;           '()
+;           (cons 9 (copy-to-list
+;                    '(11 () ())
+;                    '())))))
+; (copy-to-list
+;  '(3 (1 () ()) (5 () ()))
+;  (cons 7 (cons 9 (copy-to-list
+;                   '()
+;                   (cons 11 (copy-to-list '() '()))))))
+; (copy-to-list
+;  '(3 (1 () ()) (5 () ()))
+;  (cons 7 (cons 9 (cons 11 '()))))
+; (copy-to-list '(3 (1 () ()) (5 () ()))
+;               '(7 9 11))
+; (copy-to-list '(1 () ())
+;               (cons 3 (copy-to-list '(5 () ()) '(7 9 11))))
+; (copy-to-list '(1 () ())
+;               (cons 3 (copy-to-list '()
+;                                     (cons 5 (copy-to-list '() '(7 9 11))))))
+; (copy-to-list '(1 () ())
+;               (cons 3 (cons 5 '(7 9 11))))
+; (copy-to-list '(1 () ()) '(3 5 7 9 11))
+; (copy-to-list '()
+;               (cons 1 (copy-to-list '() '(3 5 7 9 11))))
+; (cons 1 '(3 5 7 9 11))
+; ==> '(1 3 5 7 9 11)
+```
+
+`tree->list-2` uses a helper function `copy-to-list` which combines lists using `cons` after every call. `cons` is a constant time procedure compared to `append`.
+
+The latter procedure will take a shorter time than the former. By how much is something which I cannot be certain of.
