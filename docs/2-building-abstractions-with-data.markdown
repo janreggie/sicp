@@ -1555,3 +1555,109 @@ A similar process is going on with `make-product`
       (caddr p)
       (apply make-product (cddr p))))
 ```
+
+### Exercise 2.58
+
+The first part is a bit of an exercise.
+
+```scheme
+(define (make-sum a1 a2)
+  (cond ((and (number? a1) (number? a2)) (+ a1 a2))
+        ((=number? a1 0) a2)
+        ((=number? a2 0) a1)
+        (else (list a1 '+ a2))))
+(define (sum? x) (and (pair? x) (eq? (cadr x) '+)))
+(define (addend s) (car s))
+(define (augend s) (caddr s))
+
+(define (make-product m1 m2)
+  (cond ((and (number? m1) (number? m2)) (* m1 m2))
+        ((or (=number? m1 0) (=number? m2 0)) 0)
+        ((=number? m1 1) m2)
+        ((=number? m2 1) m1)
+        (else (list m1 '* m2))))
+(define (product? x) (and (pair? x) (eq? (cadr x) '*)))
+(define (multiplicand p) (car p))
+(define (multiplier p) (caddr p))
+
+(deriv '(x + 3) 'x) ; ==> 1
+(deriv '(x * y) 'x) ; ==> y
+(deriv '((x * y) * (x + 3)) 'x) ; ==> (((x + 3) * y) + (x * y))
+(deriv '(x + (3 * (x + (y + 2)))) 'x) ; ==> 4
+```
+
+The second part is a lot more difficult. Checks have to be made to ensure that the precedence of multiplication over addition is maintained. I have not done a solution for this.
+
+### Exercise 2.59
+
+```scheme
+(define (union-set set1 set2)
+  (cond ((null? set1) set2)
+        ((null? set2) set1)
+        ((element-of-set? (car set1) set2) (union-set (cdr set1) set2))
+        (else (cons (car set1) (union-set (cdr set1) set2)))))
+
+(intersection-set '(a b c d) '(c e f g)) ; ==> (c)
+(union-set '(a b c d) '(c e f g)) ; ==> (a b d c e f g)
+```
+
+### Exercise 2.60
+
+`element-of-set?` and `intersection-set` wouldn't change, although `adjoin-set` wouldn't need to check if an element is in the set, and `union-set` would just recursively add elements regardless whether or not they are already present:
+
+```scheme
+(define (element-of-set? x set)
+  (cond ((null? set) #f)
+        ((eq? x (car set)) #t)
+        (else (element-of-set? x (cdr set)))))
+
+(define (adjoin-set x set) (cons x set))
+
+(define (intersection-set set1 set2)
+  (cond ((or (null? set1) (null? set2)) '())
+        ((element-of-set? (car set1) set2)
+         (cons (car set1) (intersection-set (cdr set1) set2)))
+        (else (intersection-set (cdr set1) set2))))
+
+(define (union-set set1 set2)
+  (cond ((null? set1) set2)
+        ((null? set2) set1)
+        (else (cons (car set1) (union-set (cdr set1) set2)))))
+
+(intersection-set '(a b c d) '(c e f g)) ; ==> (c)
+(union-set '(a b c d) '(c e f g)) ; ==> (a b c d c e f g)
+```
+
+While not checking for presence by `adjoin-set` can be seen as a benefit, and `union-set` will be $O\left(n\right)$ since it will just be recursively pushing elements, the sets would become substantially larger as more operations are placed on them, and this will be detrimental for operations which might have to check for `element-of-set?`. For instance, if there are some unique elements at the end of the list representation, and a lot of duplicates at the start, `element-of-set?` will take a much longer time to go through a set to find these unique elements.
+
+### Exercise 2.61
+
+```scheme
+(define (adjoin-set x set)
+  (cond ((null? set) (list x))
+        ((< x (car set)) (cons x set))
+        ((= x (car set)) set)
+        (else (cons (car set) (adjoin-set x (cdr set))))))
+(adjoin-set 3 '(1 2 4 5)) ; ==> (1 2 3 4 5)
+(adjoin-set 1 '(2 3 4 5)) ; ==> (1 2 3 4 5)
+(adjoin-set 2 '(1 2 4 5)) ; ==> (1 2 4 5)
+(adjoin-set 5 '(1 2 3 4)) ; ==> (1 2 3 4 5)
+```
+
+### Exercise 2.62
+
+```scheme
+(define (union-set set1 set2)
+  (cond ((null? set1) set2)
+        ((null? set2) set1)
+        (else
+         (let ((x1 (car set1)) (x2 (car set2)))
+           (cond ((= x1 x2)
+                  (cons x1 (union-set (cdr set1) (cdr set2))))
+                 ((< x1 x2)
+                  (cons x1 (union-set (cdr set1) set2)))
+                 ((> x1 x2)
+                  (cons x2 (union-set set1 (cdr set2)))))))))
+
+(union-set '(1 2 5) '(2 4 6)) ; ==> (1 2 4 5 6)
+```
