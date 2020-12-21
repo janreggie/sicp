@@ -323,6 +323,30 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-258" class="nav-link">Exercise 2.58</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-259" class="nav-link">Exercise 2.59</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-260" class="nav-link">Exercise 2.60</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-261" class="nav-link">Exercise 2.61</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-262" class="nav-link">Exercise 2.62</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="3"><a href="#exercise-263" class="nav-link">Exercise 2.63</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
               </ul>
@@ -1650,7 +1674,215 @@ S\left(\left[a,b\right]\right) = \left\{\begin{array}{lr}
   (if (= (length (cddr p)) 1)
       (caddr p)
       (apply make-product (cddr p))))
-</code></pre></div>
+</code></pre>
+
+<h3 id="exercise-258">Exercise 2.58<a class="headerlink" href="#exercise-258" title="Permanent link">&para;</a></h3>
+<p>The first part is a bit of an exercise.</p>
+<pre><code class="scheme">(define (make-sum a1 a2)
+  (cond ((and (number? a1) (number? a2)) (+ a1 a2))
+        ((=number? a1 0) a2)
+        ((=number? a2 0) a1)
+        (else (list a1 '+ a2))))
+(define (sum? x) (and (pair? x) (eq? (cadr x) '+)))
+(define (addend s) (car s))
+(define (augend s) (caddr s))
+
+(define (make-product m1 m2)
+  (cond ((and (number? m1) (number? m2)) (* m1 m2))
+        ((or (=number? m1 0) (=number? m2 0)) 0)
+        ((=number? m1 1) m2)
+        ((=number? m2 1) m1)
+        (else (list m1 '* m2))))
+(define (product? x) (and (pair? x) (eq? (cadr x) '*)))
+(define (multiplicand p) (car p))
+(define (multiplier p) (caddr p))
+
+(deriv '(x + 3) 'x) ; ==&gt; 1
+(deriv '(x * y) 'x) ; ==&gt; y
+(deriv '((x * y) * (x + 3)) 'x) ; ==&gt; (((x + 3) * y) + (x * y))
+(deriv '(x + (3 * (x + (y + 2)))) 'x) ; ==&gt; 4
+</code></pre>
+
+<p>The second part is a lot more difficult. Checks have to be made to ensure that the precedence of multiplication over addition is maintained. I have not done a solution for this.</p>
+<h3 id="exercise-259">Exercise 2.59<a class="headerlink" href="#exercise-259" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (union-set set1 set2)
+  (cond ((null? set1) set2)
+        ((null? set2) set1)
+        ((element-of-set? (car set1) set2) (union-set (cdr set1) set2))
+        (else (cons (car set1) (union-set (cdr set1) set2)))))
+
+(intersection-set '(a b c d) '(c e f g)) ; ==&gt; (c)
+(union-set '(a b c d) '(c e f g)) ; ==&gt; (a b d c e f g)
+</code></pre>
+
+<h3 id="exercise-260">Exercise 2.60<a class="headerlink" href="#exercise-260" title="Permanent link">&para;</a></h3>
+<p><code>element-of-set?</code> and <code>intersection-set</code> wouldn't change, although <code>adjoin-set</code> wouldn't need to check if an element is in the set, and <code>union-set</code> would just recursively add elements regardless whether or not they are already present:</p>
+<pre><code class="scheme">(define (element-of-set? x set)
+  (cond ((null? set) #f)
+        ((eq? x (car set)) #t)
+        (else (element-of-set? x (cdr set)))))
+
+(define (adjoin-set x set) (cons x set))
+
+(define (intersection-set set1 set2)
+  (cond ((or (null? set1) (null? set2)) '())
+        ((element-of-set? (car set1) set2)
+         (cons (car set1) (intersection-set (cdr set1) set2)))
+        (else (intersection-set (cdr set1) set2))))
+
+(define (union-set set1 set2)
+  (cond ((null? set1) set2)
+        ((null? set2) set1)
+        (else (cons (car set1) (union-set (cdr set1) set2)))))
+
+(intersection-set '(a b c d) '(c e f g)) ; ==&gt; (c)
+(union-set '(a b c d) '(c e f g)) ; ==&gt; (a b c d c e f g)
+</code></pre>
+
+<p>While not checking for presence by <code>adjoin-set</code> can be seen as a benefit, and <code>union-set</code> will be <span class="arithmatex">\(O\left(n\right)\)</span> since it will just be recursively pushing elements, the sets would become substantially larger as more operations are placed on them, and this will be detrimental for operations which might have to check for <code>element-of-set?</code>. For instance, if there are some unique elements at the end of the list representation, and a lot of duplicates at the start, <code>element-of-set?</code> will take a much longer time to go through a set to find these unique elements.</p>
+<h3 id="exercise-261">Exercise 2.61<a class="headerlink" href="#exercise-261" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (adjoin-set x set)
+  (cond ((null? set) (list x))
+        ((&lt; x (car set)) (cons x set))
+        ((= x (car set)) set)
+        (else (cons (car set) (adjoin-set x (cdr set))))))
+(adjoin-set 3 '(1 2 4 5)) ; ==&gt; (1 2 3 4 5)
+(adjoin-set 1 '(2 3 4 5)) ; ==&gt; (1 2 3 4 5)
+(adjoin-set 2 '(1 2 4 5)) ; ==&gt; (1 2 4 5)
+(adjoin-set 5 '(1 2 3 4)) ; ==&gt; (1 2 3 4 5)
+</code></pre>
+
+<h3 id="exercise-262">Exercise 2.62<a class="headerlink" href="#exercise-262" title="Permanent link">&para;</a></h3>
+<pre><code class="scheme">(define (union-set set1 set2)
+  (cond ((null? set1) set2)
+        ((null? set2) set1)
+        (else
+         (let ((x1 (car set1)) (x2 (car set2)))
+           (cond ((= x1 x2)
+                  (cons x1 (union-set (cdr set1) (cdr set2))))
+                 ((&lt; x1 x2)
+                  (cons x1 (union-set (cdr set1) set2)))
+                 ((&gt; x1 x2)
+                  (cons x2 (union-set set1 (cdr set2)))))))))
+
+(union-set '(1 2 5) '(2 4 6)) ; ==&gt; (1 2 4 5 6)
+</code></pre>
+
+<h3 id="exercise-263">Exercise 2.63<a class="headerlink" href="#exercise-263" title="Permanent link">&para;</a></h3>
+<p>Each of the three trees in Figure 2.16 can be expressed as follows:</p>
+<pre><code class="scheme">(define t1
+  '(7
+    (3 (1 () ())
+       (5 () ()))
+    (9 ()
+       (11 () ()))))
+(define t2
+  '(3
+    (1 () ())
+    (7 (5 () ())
+       (9 ()
+          (11 () ())))))
+(define t3
+  '(5
+    (3 (1 () ())
+       ())
+    (9 (7 () ())
+       (11 () ()))))
+</code></pre>
+
+<p>Both <code>tree-&gt;list-1</code> and <code>tree-&gt;list-2</code> produce the same results for each of the three trees:</p>
+<pre><code class="scheme">(tree-&gt;list-1 t1) ; ==&gt; (1 3 5 7 9 11)
+(tree-&gt;list-2 t1) ; ==&gt; (1 3 5 7 9 11)
+(tree-&gt;list-1 t2) ; ==&gt; (1 3 5 7 9 11)
+(tree-&gt;list-2 t2) ; ==&gt; (1 3 5 7 9 11)
+(tree-&gt;list-1 t3) ; ==&gt; (1 3 5 7 9 11)
+(tree-&gt;list-2 t3) ; ==&gt; (1 3 5 7 9 11)
+</code></pre>
+
+<p>Let us investigate each of their behaviors:</p>
+<pre><code class="scheme">;  (tree-&gt;list-1 t1)
+;  (append (tree-&gt;list-1 (left-branch t1))
+;          (cons (entry t1) (tree-&gt;list-1 (right-branch t1))))
+;  (append (tree-&gt;list-1 '(3 (1 () ()) (5 () ())))
+;          (cons 7 (tree-&gt;list-1 '(9 () (11 () ())))))
+;  (append
+;   (append (tree-&gt;list-1 '(1 () ()))
+;           (cons 3 (tree-&gt;list-1 '(5 () ()))))
+;    (cons 7
+;          (append (tree-&gt;list-1 '())
+;                  (cons 9 (tree-&gt;list-1 '(11 () ()))))))
+;  (append
+;   (append (append (tree-&gt;list-1 '())
+;                   (cons 1 (tree-&gt;list-1 '())))
+;           (cons 3 (append (tree-&gt;list-1 '())
+;                           (cons 5 (tree-&gt;list-1 '())))))
+;   (cons 7
+;         (append '()
+;                 (cons 9 (append (tree-&gt;list-1 '())
+;                                 (cons 11 (tree-&gt;list-1 '())))))))
+;  (append
+;   (append (append '()
+;                   (cons 1 '()))
+;           (cons 3 (append '()
+;                           (cons 5 '()))))
+;   (cons 7
+;         (append '()
+;                 (cons 9 (append '()
+;                                 (cons 11 '()))))))
+;  (append
+;   (append '(1)
+;           '(3 5))
+;   (cons 7
+;         (append '()
+;                 '(9 11))))
+;  ==&gt; '(1 3 5 7 9 11)
+</code></pre>
+
+<p><code>tree-&gt;list-1</code> is a tree-recursive function which does an <code>append</code> every time it is called with a non-empty argument. Note that <code>append</code> is a very costly function as it has to traverse to the end of the list every time it is called, and every succeeding call to <code>append</code> will have an argument longer than the previous one.</p>
+<pre><code class="scheme">(tree-&gt;list-2 t1)
+; (copy-to-list t1 '())
+; (copy-to-list
+;  (left-branch t1)
+;  (cons 7 (copy-to-list (right-branch t1)
+;                        '())))
+; (copy-to-list
+;  '(3 (1 () ()) (5 () ()))
+;  (cons 7 (copy-to-list
+;           '(9 () (11 () ()))
+;           '())))
+; (copy-to-list
+;  '(3 (1 () ()) (5 () ()))
+;  (cons 7 (copy-to-list
+;           '()
+;           (cons 9 (copy-to-list
+;                    '(11 () ())
+;                    '())))))
+; (copy-to-list
+;  '(3 (1 () ()) (5 () ()))
+;  (cons 7 (cons 9 (copy-to-list
+;                   '()
+;                   (cons 11 (copy-to-list '() '()))))))
+; (copy-to-list
+;  '(3 (1 () ()) (5 () ()))
+;  (cons 7 (cons 9 (cons 11 '()))))
+; (copy-to-list '(3 (1 () ()) (5 () ()))
+;               '(7 9 11))
+; (copy-to-list '(1 () ())
+;               (cons 3 (copy-to-list '(5 () ()) '(7 9 11))))
+; (copy-to-list '(1 () ())
+;               (cons 3 (copy-to-list '()
+;                                     (cons 5 (copy-to-list '() '(7 9 11))))))
+; (copy-to-list '(1 () ())
+;               (cons 3 (cons 5 '(7 9 11))))
+; (copy-to-list '(1 () ()) '(3 5 7 9 11))
+; (copy-to-list '()
+;               (cons 1 (copy-to-list '() '(3 5 7 9 11))))
+; (cons 1 '(3 5 7 9 11))
+; ==&gt; '(1 3 5 7 9 11)
+</code></pre>
+
+<p><code>tree-&gt;list-2</code> uses a helper function <code>copy-to-list</code> which combines lists using <code>cons</code> after every call. <code>cons</code> is a constant time procedure compared to <code>append</code>.</p>
+<p>The latter procedure will take a shorter time than the former. By how much is something which I cannot be certain of.</p></div>
             </div>
         </div>
 
